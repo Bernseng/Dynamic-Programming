@@ -1,7 +1,7 @@
 import numpy as np
 from scipy import optimize
 from timeit import default_timer as timer
-from utils import gauss_hermite, gauss_hermite_lognormal
+from utils import gauss_hermite_lognormal
 
 __all__ = ['settings','setup','allocate','solve','simulate']
 
