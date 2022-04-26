@@ -1,5 +1,4 @@
 import numpy as np
-import datetime
 from scipy import optimize
 from timeit import default_timer as timer
 from utils import gauss_hermite, gauss_hermite_lognormal
@@ -101,7 +100,7 @@ def solve(model):
 
             sol.c[t,i_m] = result.x
             sol.v[t,i_m]= -result.fun 
-    print(f'model solved in {datetime.timedelta(timer()-start)} seconds')
+    print(f'model solved in {timer()-start:.1f} seconds')
 
 # simulate function
 def simulate(model,seed=1917):
@@ -133,4 +132,4 @@ def simulate(model,seed=1917):
         if t < par.T-1: 
             sim.m[t+1] = par.R*sim.a[t,:] + sim.xi[t+1,:]
             
-    print(f'model simulated in {datetime.timedelta(timer()-start)} seconds')    
+    print(f'model simulated in {timer()-start:.1f} seconds')    
