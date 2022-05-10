@@ -16,8 +16,7 @@ def obj_bellman(sol, par, c,t,m):
         a = m-c
 
         # b. next-period cash-on-hand
-        still_working_next_period = t+1 <= par.TR-1
-        if still_working_next_period:
+        if t+1 <= par.Tr-1:
             fac = par.G*par.L[t]*par.psi_vec
             w = par.w
             xi = par.xi_vec
@@ -29,15 +28,15 @@ def obj_bellman(sol, par, c,t,m):
         m_plus = (par.R/fac)*a + xi            
 
         # c. continuation value
-        if still_working_next_period:
+        if t+1 <= par.Tr-1:
             inv_v_plus = np.zeros(m_plus.size)
-            tools.interp_linear_1d(sol.m[t+1,:],sol.inv_v[t+1,:],m_plus,inv_v_plus)
+            tools.interp_1d_vec(sol.m[t+1,:],sol.inv_v[t+1,:],m_plus,inv_v_plus)
         else:
             inv_v_plus = tools.interp_linear_1d_scalar(sol.m[t+1,:],sol.inv_v[t+1,:],m_plus)
         v_plus = 1/inv_v_plus
         
         # d. value-of-choice
-        total = utility(c,par) + par.beta*np.sum(w*fac**(1-par.rho)*v_plus)
+        total = utility.func(c,par) + par.beta*np.sum(w*fac**(1-par.rho)*v_plus)
         return -total
 
 # b. solve bellman equation        

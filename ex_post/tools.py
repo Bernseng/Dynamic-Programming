@@ -48,6 +48,22 @@ def interp_linear_1d(grid,value,xi):
     
     return yi
 
+@njit
+def interp_1d_vec(grid1,value,xi1,yi):
+    """ 1d interpolation for vector of points
+        
+    Args:
+
+        grid1 (numpy.ndarray): 1d grid
+        value (numpy.ndarray): value array (1d)
+        xi1 (numpy.ndarray): input vector
+        yi1 (numpy.ndarray): output vector
+
+    """
+
+    for i in range(yi.size):
+        yi[i] = interp_linear_1d_scalar(grid1,value,xi1[i])
+
 @njit(double(double[:],double[:],double[:,:],double,double,int32,int32),fastmath=True)
 def _interp_2d(grid1,grid2,value,xi1,xi2,j1,j2):
     """ Code is from: https://github.com/NumEconCopenhagen/ConsumptionSaving, and the package can be downloaded

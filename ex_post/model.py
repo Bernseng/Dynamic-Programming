@@ -53,10 +53,15 @@ class model_bufferstock():
         # Numerical integration and grids
         par.a_max = 20 # maximum point in grid for a
         par.a_phi = 1.1 # curvature parameters
+        par.m_max = 20.0 # maximum point i grid for m
+        par.m_phi = 1.1 # curvature parameters
+
 
         par.Nxi  = 8 # number of quadrature points for xi
         par.Npsi = 8 # number of quadrature points for psi
         par.Na = 500 # number of points in grid for a
+        par.Nm = 100 # number of points in grid for m
+
 
         # 6. simulation
         par.sim_mini = 2.5 # initial m in simulation
@@ -101,7 +106,7 @@ class model_bufferstock():
             par.xi = eps
             par.xi_w = eps_w
 
-            #Vectorize all
+        #Vectorize all
         par.xi_vec = np.tile(par.xi,par.psi.size)       # Repeat entire array x times
         par.psi_vec = np.repeat(par.psi,par.xi.size)    # Repeat each element of the array x times
         par.xi_w_vec = np.tile(par.xi_w,par.psi.size)
@@ -134,8 +139,11 @@ class model_bufferstock():
         
         #4. End of period assets
         par.grid_a = np.nan + np.zeros([par.T,par.Na])
+        par.grid_m = np.nan + np.zeros([par.T,par.Nm])
+
         for t in range(par.T):
             par.grid_a[t,:] = tools.nonlinspace(par.a_min[t]+1e-8,par.a_max,par.Na,par.a_phi)
+            par.grid_m[t,:] = tools.nonlinspace(par.a_min[t]+1e-6,par.m_max,par.Nm,par.m_phi)        
 
 
         #5.  Conditions
@@ -159,13 +167,23 @@ class model_bufferstock():
         sol = self.sol
         par = self.par
 
-        shape=(par.T,par.Na+1)
+        # create grids
+        self.create_grids()
+
+        if par.solmethod == 'vfi':
+            shape=(par.T,par.Nm)
+        elif par.solmethod == 'egm':
+            shape=(par.T,par.Na+1)
+        else:
+            raise ValueError(f'unknown solution method, {par.solmethod}')
+
         sol.m = np.nan+np.zeros(shape)
         sol.c = np.nan+np.zeros(shape)
+        sol.inv_v = np.zeros(shape)
         
-        # Last period, (= consume all) 
-        sol.m[par.T-1,:]=np.linspace(0,par.a_max,par.Na+1)
-        sol.c[par.T-1,:]= sol.m[par.T-1,:].copy()
+        # # Last period, (= consume all) 
+        # sol.m[par.T-1,:]=np.linspace(0,par.a_max,par.Na+1)
+        # sol.c[par.T-1,:]= sol.m[par.T-1,:].copy()
 
         # Before last period
         for t in range(par.T-2,-1,-1):

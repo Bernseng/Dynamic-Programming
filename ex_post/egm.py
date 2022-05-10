@@ -35,4 +35,10 @@ def EGM(sol,t,par):
     sol.c[t,1:]= util.inv_marg_util(par.beta*par.R*avg_marg_u_plus,par)
     sol.m[t,1:]=par.grid_a[t,:]+sol.c[t,1:]
 
+    # f. current v
+    # if sol.c[t,1:] > 0:
+    #     sol.inv_v[t,1:] = 1.0/(util.func(c[i_a],par) + par.beta*avg_v_plus)
+    # else:
+    #     sol.inv_v[t,1:] = 0
+
     return sol
