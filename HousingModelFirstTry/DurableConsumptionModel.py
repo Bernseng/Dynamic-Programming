@@ -79,13 +79,13 @@ class DurableConsumptionModelClass(ModelClass):
         # preferences
         par.beta = 0.965
         par.rho = 2.0
-        par.alpha = 0.9
+        par.alpha = 1.0
         par.d_ubar = 1e-2
         par.theta = 0.8
 
         # returns and income
         par.R = 1.03
-        par.Rh = par.R + .05
+        par.Rh = par.R #+ .05
         par.tau = 0.05
         par.delta = 0.03
         par.gamma = 0.50 # note: the last_period.solve_2d function must be updated if this value is changed
@@ -125,7 +125,6 @@ class DurableConsumptionModelClass(ModelClass):
         par.tol = 1e-8
         par.do_print = False
         par.do_print_period = False
-        par.do_simple_wq = False # not using optimized interpolation in C++
         par.do_marg_u = False # calculate marginal utility for use in egm
         
     def allocate(self):
