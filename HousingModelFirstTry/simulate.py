@@ -14,6 +14,7 @@ def lifecycle(sim,sol,par):
 
     # unpack
     p = sim.p
+    y = sim.y
     n = sim.n
     m = sim.m
     c = sim.c
@@ -26,13 +27,15 @@ def lifecycle(sim,sol,par):
             
             # a. beginning of period states
             if t == 0:
-                p[t,i] = trans.p_plus_func(sim.p0[i],sim.psi[t,i],par)
+                p[t,i] = trans.p_plus_func(sim.p0[i],sim.psi[t,i],par,t)
                 n[t,i] = trans.n_plus_func(sim.d0[i],par)
                 m[t,i] = trans.m_plus_func(sim.a0[i],p[t,i],sim.xi[t,i],par)
             else:
-                p[t,i] = trans.p_plus_func(p[t-1,i],sim.psi[t,i],par)
+                p[t,i] = trans.p_plus_func(p[t-1,i],sim.psi[t,i],par,t)
                 n[t,i] = trans.n_plus_func(d[t-1,i],par)
                 m[t,i] = trans.m_plus_func(a[t-1,i],p[t,i],sim.xi[t,i],par)
+            
+            y[t,i] = p[t,i] * sim.xi[t,i] 
             
             # b. optimal choices and post decision states
             optimal_choice(t,p[t,i],n[t,i],m[t,i],discrete[t,i:],d[t,i:],c[t,i:],a[t,i:],sol,par)

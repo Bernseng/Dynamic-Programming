@@ -1,5 +1,5 @@
 import numpy as np
-
+import math
 import matplotlib.pyplot as plt
 from matplotlib import cm
 from mpl_toolkits.mplot3d import Axes3D
@@ -240,16 +240,24 @@ def lifecycle(model):
     fig = plt.figure(figsize=(12,12))
 
     simvarlist = [('p','$p_t$'),
+                  ('y','$y_t$'),
                   ('n','$n_t$'),
                   ('m','$m_t$'),
                   ('c','$c_t$'),
                   ('a','$a_t$'),
-                  ('discrete','adjuster share')]
+                  ('discrete','adjuster share'),                  
+                  ]
 
+    # determine number of rows in figure, given the number of columns
+    cols = 2
+    rows = math.ceil(len(simvarlist) / cols)
+
+    # x-axis labels
     age = np.arange(par.T)
+
     for i,(simvar,simvarlatex) in enumerate(simvarlist):
 
-        ax = fig.add_subplot(3,2,i+1)
+        ax = fig.add_subplot(rows,cols,i+1)
 
         simdata = getattr(sim,simvar)[:par.T,:]
 
@@ -305,25 +313,12 @@ def lifecycle_compare(model1,latex1,model2,latex2,do_euler_errors=False):
             simdata = getattr(sim2,simvar)[:par.T-1,:]
             ax.plot(age[:-1],np.nanmean(simdata,axis=1),lw=2,label=latex2)
 
-        # elif par.do_2d and simvar == 'discrete':
-
-        #     simdata = getattr(sim1,simvar)[:par.T,:]
-        #     ax.plot(age,np.mean(simdata == j,axis=1),lw=2,label=latex1)
-
-        #     simdata = getattr(sim2,simvar)[:par.T,:]
-        #     ax.plot(age,np.mean(simdata == j,axis=1),lw=2,label=latex2)
-
         else:
-
+            
             simdata = getattr(sim1,simvar)[:par.T,:]
             ax.plot(age,np.mean(simdata,axis=1),lw=2,label=latex1)
-            # print(f"age: {age}")
-            # print(f"age.size: {age.size}")
-            # print(f"simdata_mean shape {np.mean(simdata,axis=1)}")
-            simdata = getattr(sim2,simvar)[:par.T,:]
-            # print(f"simdata_mean shape {np.mean(simdata,axis=1)}")
 
-            # raise
+            simdata = getattr(sim2,simvar)[:par.T,:]
             ax.plot(age,np.mean(simdata,axis=1),lw=2,label=latex2)
 
         ax.set_title(simvarlatex)

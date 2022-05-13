@@ -67,7 +67,7 @@ class DurableConsumptionModelClass(ModelClass):
         # a. baseline parameters
         
         # horizon and life cycle
-        par.Tmin = 0 # age when entering the model
+        par.Tmin = 25 # age when entering the model
         par.T = 100 - par.Tmin # age of death
         par.Tr = 65 - par.Tmin # retirement age
         par.G = 1.02 # growth in permanent income
@@ -86,7 +86,7 @@ class DurableConsumptionModelClass(ModelClass):
         # returns and income
         par.R = 1.03
         par.Rh = par.R + .05
-        par.tau = 0.10
+        par.tau = 0.05
         par.delta = 0.03
         par.gamma = 0.50 # note: the last_period.solve_2d function must be updated if this value is changed
         par.sigma_psi = 0.1
@@ -384,6 +384,7 @@ class DurableConsumptionModelClass(ModelClass):
         # b. states and choices
         sim_shape = (par.T,par.simN)
         sim.p = np.zeros(sim_shape)
+        sim.y = np.zeros(sim_shape)
         sim.m = np.zeros(sim_shape)
 
         sim.n = np.zeros(sim_shape)
@@ -402,6 +403,7 @@ class DurableConsumptionModelClass(ModelClass):
         # d. shocks
         sim.psi = np.zeros((par.T,par.simN))
         sim.xi = np.zeros((par.T,par.simN))
+
 
     def simulate(self,do_utility=False,do_euler_error=False):
         """ simulate the model """

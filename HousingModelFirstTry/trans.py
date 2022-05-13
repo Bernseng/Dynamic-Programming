@@ -8,7 +8,7 @@ def p_plus_func(p,psi,par,t):
         p_plus = np.fmax(p_plus,par.p_min) # lower bound
         p_plus = np.fmin(p_plus,par.p_max) # upper bound
     else: 
-        p_plus = p*par.G*par.L[t]
+        p_plus = p*par.G*par.L[t] # no shocks to permanent income after retirement
         p_plus = np.fmax(p_plus,par.p_min) # lower bound
         p_plus = np.fmin(p_plus,par.p_max) # upper bound
     return p_plus
