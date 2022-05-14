@@ -230,8 +230,12 @@ def _egm(model,t,i_p,i_n):
 # lifecycle #
 #############
 
-def lifecycle(model):
-
+def lifecycle(model,deciles:bool=False):
+    '''
+    Plot the lifecycle of the model.
+    Keyword arguments:
+    deciles -- if True, plot deciles instead of mean + quantiles
+    '''
     # a. unpack
     par = model.par
     sim = model.sim
@@ -260,13 +264,20 @@ def lifecycle(model):
         ax = fig.add_subplot(rows,cols,i+1)
 
         simdata = getattr(sim,simvar)[:par.T,:]
-
-        ax.plot(age,np.mean(simdata,axis=1),lw=2)
-        if simvar not in ['discrete']:
-            ax.plot(age,np.percentile(simdata,25,axis=1),
-                ls='--',lw=1,color='black')
-            ax.plot(age,np.percentile(simdata,75,axis=1),
-                ls='--',lw=1,color='black')
+        if deciles:
+            if simvar not in ['discrete']:
+                series = np.percentile(simdata, np.arange(0, 100, 10),axis=1)
+                ax.plot(age, series.T,lw=2)
+                if i == 0: ax.legend(np.arange(0, 100, 10),title='Deciles',fontsize=8)
+            else:
+                ax.plot(age,np.mean(simdata,axis=1),lw=2)
+        else:
+            ax.plot(age,np.mean(simdata,axis=1),lw=2)
+            if simvar not in ['discrete']:
+                ax.plot(age,np.percentile(simdata,25,axis=1),
+                    ls='--',lw=1,color='black')
+                ax.plot(age,np.percentile(simdata,75,axis=1),
+                    ls='--',lw=1,color='black')
         ax.set_title(simvarlatex)
         if par.T > 10:
             ax.xaxis.set_ticks(age[::5])

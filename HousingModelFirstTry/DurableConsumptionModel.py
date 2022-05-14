@@ -71,7 +71,7 @@ class DurableConsumptionModelClass(ModelClass):
         par.T = 100 - par.Tmin # age of death
         par.Tr = 65 - par.Tmin # retirement age
         par.G = 1.02 # growth in permanent income
-        par.L = np.ones((par.T))
+        par.L = np.ones(par.T-1)
         par.L[0:par.Tr] = np.linspace(1,1/par.G,par.Tr) 
         par.L[par.Tr-1] = 0.67 # drop in permanent income at retirement age
         par.L[par.Tr-1:] = par.L[par.Tr-1:]/par.G # constant permanent income after retirement
@@ -79,13 +79,13 @@ class DurableConsumptionModelClass(ModelClass):
         # preferences
         par.beta = 0.965
         par.rho = 2.0
-        par.alpha = 1.0
+        par.alpha = 0.9
         par.d_ubar = 1e-2
         par.theta = 0.8
 
         # returns and income
         par.R = 1.03
-        par.Rh = par.R #+ .05
+        par.Rh = par.R + .05
         par.tau = 0.05
         par.delta = 0.03
         par.gamma = 0.50 # note: the last_period.solve_2d function must be updated if this value is changed
@@ -478,8 +478,8 @@ class DurableConsumptionModelClass(ModelClass):
     def egm(self):        
         figs.egm(self)
 
-    def lifecycle(self):        
-        figs.lifecycle(self)
+    def lifecycle(self, deciles=False):        
+        figs.lifecycle(self,deciles=deciles)
 
     ###########
     # analyze #
