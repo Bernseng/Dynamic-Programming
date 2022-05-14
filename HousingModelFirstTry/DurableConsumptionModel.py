@@ -23,7 +23,7 @@ from consav import ModelClass, jit # baseline model class and jit
 from consav import linear_interp # for linear interpolation
 from consav import golden_section_search # for optimization in 1D
 from consav.grids import nonlinspace # grids
-from consav.quadrature import create_PT_shocks # income shocks
+from quadrature import create_PT_shocks, normal_gauss_hermite  # quadrature
 
 # local modules
 import utility
@@ -55,9 +55,9 @@ class DurableConsumptionModelClass(ModelClass):
         self.savefolder = 'saved'
 
         # d. list not-floats for safe type inference
-        self.not_floats = ['solmethod','T','t','simN','sim_seed','cppthreads',
+        self.not_floats = ['housing_shock', 'solmethod','T','t','simN','sim_seed',
                            'Npsi','Nxi','Nm','Np','Nn','Nx','Na','Nshocks',
-                           'do_2d','do_print','do_print_period','do_marg_u','do_simple_wq']
+                           'do_print','do_print_period','do_marg_u','do_simple_wq']
 
     def setup(self):
         """ set baseline parameters """
@@ -84,16 +84,19 @@ class DurableConsumptionModelClass(ModelClass):
         par.theta = 0.8
 
         # returns and income
+        par.housing_shock = True
         par.R = 1.03
         par.Rh = par.R + .05
-        par.tau = 0.05
+        par.Nz = 10 # 5 nodes times binary outcome with large shock
+        par.tau = 0.10
         par.delta = 0.03
-        par.gamma = 0.50 # note: the last_period.solve_2d function must be updated if this value is changed
         par.sigma_psi = 0.1
         par.Npsi = 5
         par.sigma_xi = 0.1
         par.Nxi = 5
-        par.pi = 0.0
+        par.pi = -0.1
+        par.sigma_epsilon = 0.02
+        par.gamma = 0.05
         par.mu = 0.5
         
         # grids
@@ -134,6 +137,21 @@ class DurableConsumptionModelClass(ModelClass):
         self.solve_prep()
         self.simulate_prep()
             
+    def housing_shocks(self):
+        par = self.par
+        
+        eps, eps_w = normal_gauss_hermite(par.sigma_epsilon,par.Nz)
+        
+        if par.gamma>0:
+            par.z = np.append(eps,eps+par.pi, axis=None)
+            par.z_w = np.append((1-par.gamma)*eps_w, par.gamma*eps_w, axis=None)
+        else:
+            par.z = eps
+            par.z_w = eps_w 
+
+        return par.z,par.z_w
+
+
     def create_grids(self):
         """ construct grids for states and shocks """
         
@@ -153,9 +171,11 @@ class DurableConsumptionModelClass(ModelClass):
         
         # c. shocks
         shocks = create_PT_shocks(
-            par.sigma_psi,par.Npsi,par.sigma_xi,par.Nxi,
-            par.pi,par.mu)
+            sigma_psi=par.sigma_psi,Npsi=par.Npsi,sigma_xi=par.sigma_xi,Nxi=par.Nxi,mu=par.mu)
         par.psi,par.psi_w,par.xi,par.xi_w,par.Nshocks = shocks
+        
+        if par.housing_shock: 
+            par.z, par.z_w = self.housing_shocks()
 
         # d. set seed
         np.random.seed(par.sim_seed)
@@ -224,10 +244,11 @@ class DurableConsumptionModelClass(ModelClass):
             fastpar[key] = prev
 
         self.allocate()
+                
 
         # c. solve
         self.solve(do_assert=False)
-
+        
         # d. simulate
         self.simulate()
 
@@ -301,7 +322,7 @@ class DurableConsumptionModelClass(ModelClass):
 
                 # ii. all other periods
                 else:
-                    
+                      
                     # o. compute post-decision functions
                     tic_w = time.time()
 
@@ -329,7 +350,7 @@ class DurableConsumptionModelClass(ModelClass):
                         nvfi.solve_keep(t,sol,par)
                     elif par.solmethod == 'negm':
                         negm.solve_keep(t,sol,par)                                     
-
+                    
                     toc_keep = time.time()
                     par.time_keep[t] = toc_keep-tic_keep
                     if par.do_print:
@@ -402,6 +423,7 @@ class DurableConsumptionModelClass(ModelClass):
         # d. shocks
         sim.psi = np.zeros((par.T,par.simN))
         sim.xi = np.zeros((par.T,par.simN))
+        sim.z = np.zeros(par.T)
 
 
     def simulate(self,do_utility=False,do_euler_error=False):
@@ -424,6 +446,18 @@ class DurableConsumptionModelClass(ModelClass):
         sim.psi[:,:] = par.psi[I]
         sim.xi[:,:] = par.xi[I]
 
+        print(f"z_w \n {par.z_w}")
+        print(f"z \n {par.z_w}")
+
+        print(f"{par.Nz}")
+
+        if par.housing_shock:
+            J = np.random.choice(par.Nz,
+                size=par.T, 
+                p=par.z_w)
+            sim.z[:] = par.z[J]
+            
+        
         # b. call
         with jit(self) as model:
 

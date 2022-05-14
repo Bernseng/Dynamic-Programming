@@ -48,10 +48,12 @@ def compute_wq(t,sol,par,compute_q=False):
                 psi_plus_w = par.psi_w[ishock]
                 xi_plus = par.xi[ishock]
                 xi_plus_w = par.xi_w[ishock]
+                z_plus_w = par.z_w[ishock]
+                z_plus = par.z[ishock]
 
                 # ii. next-period income and durables
                 p_plus = trans.p_plus_func(p,psi_plus,par,t)
-                n_plus = trans.n_plus_func(n,par)
+                n_plus = trans.n_plus_func(n,par,z_plus)
 
                 # iii. prepare interpolators
                 prep_keep = linear_interp.interp_3d_prep(par.grid_p,par.grid_n,p_plus,n_plus,par.Na)

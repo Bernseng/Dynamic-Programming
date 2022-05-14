@@ -30,7 +30,7 @@ def value_of_choice(t,c,d,p,x,inv_v_keep,inv_v_adj,par):
         
         # ii. next-period states
         p_plus = trans.p_plus_func(p,psi,par,t)
-        n_plus = trans.n_plus_func(d,par)
+        n_plus = trans.n_plus_func(d,par,sim.z)
         m_plus = trans.m_plus_func(a,p_plus,xi,par)
         x_plus = trans.x_plus_func(m_plus,n_plus,par)
         
