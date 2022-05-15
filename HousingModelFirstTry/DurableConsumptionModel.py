@@ -67,9 +67,9 @@ class DurableConsumptionModelClass(ModelClass):
         # a. baseline parameters
         
         # horizon and life cycle
-        par.Tmin = 25 # age when entering the model
-        par.T = 100 - par.Tmin # age of death
-        par.Tr = 65 - par.Tmin # retirement age
+        par.Tmin = 0 # age when entering the model
+        par.T = 50 - par.Tmin # age of death
+        par.Tr = 35 - par.Tmin # retirement age
         par.G = 1.02 # growth in permanent income
         par.L = np.ones(par.T-1)
         par.L[0:par.Tr] = np.linspace(1,1/par.G,par.Tr) 
