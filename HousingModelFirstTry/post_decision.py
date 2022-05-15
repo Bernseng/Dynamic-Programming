@@ -49,56 +49,56 @@ def compute_wq(t,sol,par,compute_q=False):
                 xi_plus = par.xi[ishock]
                 xi_plus_w = par.xi_w[ishock]
 
-                for zshock in range(par.Nz):
+                #for zshock in range(par.Nz):
 
-                    # i. housing shocks
-                    z_plus = par.z[zshock]
-                    z_plus_w = par.z_w[zshock]   
+                # i. housing shocks
+                z_plus = par.z[ishock]    # par.z[zshock]
+                z_plus_w = par.z_w[ishock]    #par.z_w[zshock]   
 
-                    # ii. next-period income and durables
-                    p_plus = trans.p_plus_func(p,psi_plus,par,t)   # move out 
-                    n_plus = trans.n_plus_func(n,par,z_plus)
+                # ii. next-period income and durables
+                p_plus = trans.p_plus_func(p,psi_plus,par,t)   # move out 
+                n_plus = trans.n_plus_func(n,par,z_plus)
 
-                    # iii. prepare interpolators
-                    prep_keep = linear_interp.interp_3d_prep(par.grid_p,par.grid_n,p_plus,n_plus,par.Na)
-                    prep_adj = linear_interp.interp_2d_prep(par.grid_p,p_plus,par.Na) # move out
+                # iii. prepare interpolators
+                prep_keep = linear_interp.interp_3d_prep(par.grid_p,par.grid_n,p_plus,n_plus,par.Na)
+                prep_adj = linear_interp.interp_2d_prep(par.grid_p,p_plus,par.Na) # move out
 
-                    # iv. weight
-                    weight = psi_plus_w*xi_plus_w*z_plus_w
+                # iv. weight
+                weight = psi_plus_w*xi_plus_w*z_plus_w
 
-                    # v. next-period cash-on-hand and total resources
-                    for i_a in range(par.Na):
-            
-                        m_plus[i_a] = trans.m_plus_func(par.grid_a[i_a],p_plus,xi_plus,par) # move out
-                        x_plus[i_a] = trans.x_plus_func(m_plus[i_a],n_plus,par)
+                # v. next-period cash-on-hand and total resources
+                for i_a in range(par.Na):
+        
+                    m_plus[i_a] = trans.m_plus_func(par.grid_a[i_a],p_plus,xi_plus,par) # move out
+                    x_plus[i_a] = trans.x_plus_func(m_plus[i_a],n_plus,par)
+                
+                # vi. interpolate
+                linear_interp.interp_3d_only_last_vec_mon(prep_keep,par.grid_p,par.grid_n,par.grid_m,sol.inv_v_keep[t+1],p_plus,n_plus,m_plus,inv_v_keep_plus)
+                linear_interp.interp_2d_only_last_vec_mon(prep_adj,par.grid_p,par.grid_x,sol.inv_v_adj[t+1],p_plus,x_plus,inv_v_adj_plus)
+                if compute_q:
+                    linear_interp.interp_3d_only_last_vec_mon_rep(prep_keep,par.grid_p,par.grid_n,par.grid_m,sol.inv_marg_u_keep[t+1],p_plus,n_plus,m_plus,inv_marg_u_keep_plus)
+                    linear_interp.interp_2d_only_last_vec_mon_rep(prep_adj,par.grid_p,par.grid_x,sol.inv_marg_u_adj[t+1],p_plus,x_plus,inv_marg_u_adj_plus)
                     
-                    # vi. interpolate
-                    linear_interp.interp_3d_only_last_vec_mon(prep_keep,par.grid_p,par.grid_n,par.grid_m,sol.inv_v_keep[t+1],p_plus,n_plus,m_plus,inv_v_keep_plus)
-                    linear_interp.interp_2d_only_last_vec_mon(prep_adj,par.grid_p,par.grid_x,sol.inv_v_adj[t+1],p_plus,x_plus,inv_v_adj_plus)
-                    if compute_q:
-                        linear_interp.interp_3d_only_last_vec_mon_rep(prep_keep,par.grid_p,par.grid_n,par.grid_m,sol.inv_marg_u_keep[t+1],p_plus,n_plus,m_plus,inv_marg_u_keep_plus)
-                        linear_interp.interp_2d_only_last_vec_mon_rep(prep_adj,par.grid_p,par.grid_x,sol.inv_marg_u_adj[t+1],p_plus,x_plus,inv_marg_u_adj_plus)
-                        
-                    # vii. max and accumulate
-                    if compute_q: #negm
+                # vii. max and accumulate
+                if compute_q: #negm
 
-                        for i_a in range(par.Na):                                
+                    for i_a in range(par.Na):                                
 
-                            keep = inv_v_keep_plus[i_a] > inv_v_adj_plus[i_a]
-                            if keep:
-                                v_plus = -1/inv_v_keep_plus[i_a]
-                                marg_u_plus = 1/inv_marg_u_keep_plus[i_a]
-                            else:
-                                v_plus = -1/inv_v_adj_plus[i_a]
-                                marg_u_plus = 1/inv_marg_u_adj_plus[i_a]
+                        keep = inv_v_keep_plus[i_a] > inv_v_adj_plus[i_a]
+                        if keep:
+                            v_plus = -1/inv_v_keep_plus[i_a]
+                            marg_u_plus = 1/inv_marg_u_keep_plus[i_a]
+                        else:
+                            v_plus = -1/inv_v_adj_plus[i_a]
+                            marg_u_plus = 1/inv_marg_u_adj_plus[i_a]
 
-                            w[i_a] += weight*par.beta*v_plus
-                            q[i_p,i_n,i_a] += weight*par.beta*par.R*marg_u_plus
+                        w[i_a] += weight*par.beta*v_plus
+                        q[i_p,i_n,i_a] += weight*par.beta*par.R*marg_u_plus
 
-                    else:
+                else:
 
-                        for i_a in range(par.Na):
-                            w[i_a] += weight*par.beta*(-1.0/np.fmax(inv_v_keep_plus[i_a],inv_v_adj_plus[i_a]))
+                    for i_a in range(par.Na):
+                        w[i_a] += weight*par.beta*(-1.0/np.fmax(inv_v_keep_plus[i_a],inv_v_adj_plus[i_a]))
         
             # d. transform post decision value function
             for i_a in range(par.Na):

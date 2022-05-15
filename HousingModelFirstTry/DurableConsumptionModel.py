@@ -171,12 +171,23 @@ class DurableConsumptionModelClass(ModelClass):
         par.grid_a = nonlinspace(0,par.a_max,par.Na,1.1)
         
         # c. shocks
+        # shocks = create_PT_shocks(
+        #     sigma_psi=par.sigma_psi,Npsi=par.Npsi,sigma_xi=par.sigma_xi,Nxi=par.Nxi,mu=par.mu)
+
         shocks = create_PT_shocks(
-            sigma_psi=par.sigma_psi,Npsi=par.Npsi,sigma_xi=par.sigma_xi,Nxi=par.Nxi,mu=par.mu)
-        par.psi,par.psi_w,par.xi,par.xi_w,par.Nshocks = shocks
+            sigma_psi=par.sigma_psi,
+            Npsi=par.Npsi,
+            sigma_xi=par.sigma_xi,
+            Nxi=par.Nxi,
+            sigma_epsilon=par.sigma_epsilon,
+            Nz=par.Nz,
+            gamma=par.gamma,
+            pi=par.pi,
+            )
+        par.psi,par.psi_w,par.xi,par.xi_w,par.z,par.z_w,par.Nshocks = shocks
         
-        if par.housing_shock: 
-            par.z, par.z_w = self.housing_shocks()
+        # if par.housing_shock: 
+        #     par.z, par.z_w = self.housing_shocks()
 
         # d. set seed
         np.random.seed(par.sim_seed)
@@ -246,7 +257,6 @@ class DurableConsumptionModelClass(ModelClass):
 
         self.allocate()
                 
-
         # c. solve
         self.solve(do_assert=False)
         
@@ -424,7 +434,7 @@ class DurableConsumptionModelClass(ModelClass):
         # d. shocks
         sim.psi = np.zeros((par.T,par.simN))
         sim.xi = np.zeros((par.T,par.simN))
-        sim.z = np.zeros(par.T)
+        sim.z = np.zeros(par.T)  # economy wide shock
 
 
     def simulate(self,do_utility=False,do_euler_error=False):
@@ -443,20 +453,21 @@ class DurableConsumptionModelClass(ModelClass):
 
         I = np.random.choice(par.Nshocks,
             size=(par.T,par.simN), 
-            p=par.psi_w*par.xi_w)
+            p=par.psi_w*par.xi_w*par.z_w
+            )
         sim.psi[:,:] = par.psi[I]
         sim.xi[:,:] = par.xi[I]
+        sim.z[:] = par.z[I[:,0]] # since shock is economy wide we can just take the shock for the first person
 
         #print(f"z_w \n {par.z_w}")
         #print(f"z \n {par.z_w}")
         #print(f"{par.Nz}")
 
-        if par.housing_shock:
-            J = np.random.choice(par.Nz,
-                size=par.T, 
-                p=par.z_w)
-            sim.z[:] = par.z[J]
-            
+        # if par.housing_shock:
+        #     J = np.random.choice(par.Nz,
+        #         size=par.T, 
+        #         p=par.z_w)
+        #     sim.z[:] = par.z[J]   
         
         # b. call
         with jit(self) as model:

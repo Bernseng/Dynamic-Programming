@@ -116,7 +116,7 @@ def log_normal_gauss_hermite(sigma,n=7,mu=None):
 
     return x,w
 
-def create_PT_shocks(sigma_psi,Npsi,sigma_xi,Nxi,pi=0,mu=None):
+def create_PT_shocks(sigma_psi,Npsi,sigma_xi,Nxi,sigma_epsilon,Nz,gamma,pi):  #,pi=0,mu=None):
     """ log-normal gauss-hermite nodes for permanent transitory model
 
     Args:
@@ -141,20 +141,29 @@ def create_PT_shocks(sigma_psi,Npsi,sigma_xi,Nxi,pi=0,mu=None):
     # a. gauss hermite
     psi, psi_w = log_normal_gauss_hermite(sigma_psi,Npsi)
     xi, xi_w = log_normal_gauss_hermite(sigma_xi,Nxi)
+    eps, eps_w = normal_gauss_hermite(sigma_epsilon,Nz)
+
+    if gamma>0:
+        z = np.append(eps,eps+pi, axis=None)
+        z_w = np.append((1-gamma)*eps_w, gamma*eps_w, axis=None)
+        #par.Nz = Nz*2
+    else:
+        z = eps
+        z_w = eps_w 
 
     # b. add low inncome shock
-    if pi > 0:
+    # if pi > 0:
          
-        # i. weights
-        xi_w *= (1.0-pi)
-        xi_w = np.insert(xi_w,0,pi)
+    #     # i. weights
+    #     xi_w *= (1.0-pi)
+    #     xi_w = np.insert(xi_w,0,pi)
 
-        # ii. values
-        xi = (xi-mu*pi)/(1.0-pi)
-        xi = np.insert(xi,0,mu)
+    #     # ii. values
+    #     xi = (xi-mu*pi)/(1.0-pi)
+    #     xi = np.insert(xi,0,mu)
     
-    # c. tensor product
-    psi,xi = np.meshgrid(psi,xi,indexing='ij')
-    psi_w,xi_w = np.meshgrid(psi_w,xi_w,indexing='ij')
+    # c. tensor product matrix: ‘ij’-indexing of output
+    psi,xi,z = np.meshgrid(psi,xi,z,indexing='ij')
+    psi_w,xi_w,z_w = np.meshgrid(psi_w,xi_w,z_w,indexing='ij')
 
-    return psi.ravel(),psi_w.ravel(),xi.ravel(),xi_w.ravel(),psi.size
+    return psi.ravel(),psi_w.ravel(),xi.ravel(),xi_w.ravel(),z.ravel(), z_w.ravel(), psi.size
