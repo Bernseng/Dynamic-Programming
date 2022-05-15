@@ -15,7 +15,7 @@ def p_plus_func(p,psi,par,t):
 
 @njit(fastmath=True)
 def n_plus_func(d,par,z):
-    n_plus = (par.Rh+z)*(1-par.delta)*d
+    n_plus = (par.Rh)*(1-par.delta)*d   # deleted "+z"
     n_plus = np.fmin(n_plus,par.n_max) # upper bound
     return n_plus
 

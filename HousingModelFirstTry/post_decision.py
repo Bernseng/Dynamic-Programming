@@ -76,7 +76,7 @@ def compute_wq(t,sol,par,compute_q=False):
                     linear_interp.interp_2d_only_last_vec_mon_rep(prep_adj,par.grid_p,par.grid_x,sol.inv_marg_u_adj[t+1],p_plus,x_plus,inv_marg_u_adj_plus)
                      
                 # vii. max and accumulate
-                if compute_q:
+                if compute_q: #negm
 
                     for i_a in range(par.Na):                                
 

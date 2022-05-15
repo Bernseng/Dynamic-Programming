@@ -145,6 +145,7 @@ class DurableConsumptionModelClass(ModelClass):
         if par.gamma>0:
             par.z = np.append(eps,eps+par.pi, axis=None)
             par.z_w = np.append((1-par.gamma)*eps_w, par.gamma*eps_w, axis=None)
+            par.Nz = par.Nz*2
         else:
             par.z = eps
             par.z_w = eps_w 
@@ -446,10 +447,9 @@ class DurableConsumptionModelClass(ModelClass):
         sim.psi[:,:] = par.psi[I]
         sim.xi[:,:] = par.xi[I]
 
-        print(f"z_w \n {par.z_w}")
-        print(f"z \n {par.z_w}")
-
-        print(f"{par.Nz}")
+        #print(f"z_w \n {par.z_w}")
+        #print(f"z \n {par.z_w}")
+        #print(f"{par.Nz}")
 
         if par.housing_shock:
             J = np.random.choice(par.Nz,
