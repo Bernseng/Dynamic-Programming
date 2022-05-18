@@ -27,11 +27,11 @@ def lifecycle(sim,sol,par):
             
             # a. beginning of period states
             if t == 0:
-                p[t,i] = sim.p0[i] #trans.p_plus_func(sim.p0[i],sim.psi[t,i],par,t)
-                n[t,i] = sim.d0[i] #trans.n_plus_func(sim.d0[i],par)
-                m[t,i] = sim.a0[i] #trans.m_plus_func(sim.a0[i],p[t,i],sim.xi[t,i],par)
+                p[t,i] = sim.p0[i] 
+                n[t,i] = sim.d0[i] 
+                m[t,i] = sim.a0[i] 
             else:
-                p[t,i] = trans.p_plus_func(p[t-1,i],sim.psi[t,i],par,t-1)   # note the inconsistency here in terms of timing t. but t-1 gives no kink.....
+                p[t,i] = trans.p_plus_func(p[t-1,i],sim.psi[t,i],par,t-1)   
                 n[t,i] = trans.n_plus_func(d[t-1,i],par,sim.z[t])
                 m[t,i] = trans.m_plus_func(a[t-1,i],p[t,i],sim.xi[t,i],par)
             

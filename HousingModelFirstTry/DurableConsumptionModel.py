@@ -136,21 +136,6 @@ class DurableConsumptionModelClass(ModelClass):
         self.create_grids()
         self.solve_prep()
         self.simulate_prep()
-            
-    def housing_shocks(self):
-        par = self.par
-        
-        eps, eps_w = normal_gauss_hermite(par.sigma_epsilon,par.Nz)
-        
-        if par.gamma>0:
-            par.z = np.append(eps,eps+par.pi, axis=None)
-            par.z_w = np.append((1-par.gamma)*eps_w, par.gamma*eps_w, axis=None)
-            par.Nz = par.Nz*2
-        else:
-            par.z = eps
-            par.z_w = eps_w 
-
-        return par.z,par.z_w
 
 
     def create_grids(self):
@@ -171,8 +156,6 @@ class DurableConsumptionModelClass(ModelClass):
         par.grid_a = nonlinspace(0,par.a_max,par.Na,1.1)
         
         # c. shocks
-        # shocks = create_PT_shocks(
-        #     sigma_psi=par.sigma_psi,Npsi=par.Npsi,sigma_xi=par.sigma_xi,Nxi=par.Nxi,mu=par.mu)
 
         shocks = create_PT_shocks(
             sigma_psi=par.sigma_psi,
@@ -185,9 +168,6 @@ class DurableConsumptionModelClass(ModelClass):
             pi=par.pi,
             )
         par.psi,par.psi_w,par.xi,par.xi_w,par.z,par.z_w,par.Nshocks = shocks
-        
-        # if par.housing_shock: 
-        #     par.z, par.z_w = self.housing_shocks()
 
         # d. set seed
         np.random.seed(par.sim_seed)
@@ -458,16 +438,6 @@ class DurableConsumptionModelClass(ModelClass):
         sim.psi[:,:] = par.psi[I]
         sim.xi[:,:] = par.xi[I]
         sim.z[:] = par.z[I[:,0]] # since shock is economy wide we can just take the shock for the first person
-
-        #print(f"z_w \n {par.z_w}")
-        #print(f"z \n {par.z_w}")
-        #print(f"{par.Nz}")
-
-        # if par.housing_shock:
-        #     J = np.random.choice(par.Nz,
-        #         size=par.T, 
-        #         p=par.z_w)
-        #     sim.z[:] = par.z[J]   
         
         # b. call
         with jit(self) as model:
