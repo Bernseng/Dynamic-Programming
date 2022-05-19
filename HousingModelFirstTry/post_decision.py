@@ -69,8 +69,9 @@ def compute_wq(t,sol,par,compute_q=False):
                 # v. next-period cash-on-hand and total resources
                 for i_a in range(par.Na):
         
-                    m_plus[i_a] = trans.m_plus_func(par.grid_a[i_a],p_plus,xi_plus,par) # move out
+                    m_plus[i_a] = trans.m_plus_func(par.grid_a[i_n,i_a],p_plus,xi_plus,par) # move out
                     x_plus[i_a] = trans.x_plus_func(m_plus[i_a],n_plus,par)
+                    
                 
                 # vi. interpolate
                 linear_interp.interp_3d_only_last_vec_mon(prep_keep,par.grid_p,par.grid_n,par.grid_m,sol.inv_v_keep[t+1],p_plus,n_plus,m_plus,inv_v_keep_plus)

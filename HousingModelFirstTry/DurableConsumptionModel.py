@@ -68,8 +68,8 @@ class DurableConsumptionModelClass(ModelClass):
         
         # horizon and life cycle
         par.Tmin = 0 # age when entering the model
-        par.T = 50 - par.Tmin # age of death
-        par.Tr = 35 - par.Tmin # retirement age
+        par.T = 35 - par.Tmin # age of death
+        par.Tr = 25 - par.Tmin # retirement age
         par.G = 1.02 # growth in permanent income
         par.L = np.ones(par.T-1)
         par.L[0:par.Tr] = np.linspace(1,1/par.G,par.Tr) 
@@ -98,6 +98,7 @@ class DurableConsumptionModelClass(ModelClass):
         par.sigma_epsilon = 0.02
         par.gamma = 0.05
         par.mu = 0.5
+        par.omega = 0.8
         
         # grids
         par.Np = 50
@@ -109,7 +110,7 @@ class DurableConsumptionModelClass(ModelClass):
         par.m_max = 10.0    
         par.Nx = 100
         par.x_max = par.m_max + par.n_max
-        par.Na = 100
+        par.Na = 150
         par.a_max = par.m_max+1.0
 
         # simulation
@@ -168,8 +169,11 @@ class DurableConsumptionModelClass(ModelClass):
         par.grid_x = nonlinspace(0,par.x_max,par.Nx,1.1)
         
         # b. post-decision states
-        par.grid_a = nonlinspace(0,par.a_max,par.Na,1.1)
+        par.grid_a = np.nan + np.zeros((par.Nn,par.Na))
         
+        for i_n in range(par.Nn): 
+            par.grid_a[i_n,:] = nonlinspace(-par.omega*par.grid_n[i_n],par.a_max,par.Na,1.1)
+        print(par.grid_a)
         # c. shocks
         # shocks = create_PT_shocks(
         #     sigma_psi=par.sigma_psi,Npsi=par.Npsi,sigma_xi=par.sigma_xi,Nxi=par.Nxi,mu=par.mu)
@@ -333,7 +337,7 @@ class DurableConsumptionModelClass(ModelClass):
 
                 # ii. all other periods
                 else:
-                      
+
                     # o. compute post-decision functions
                     tic_w = time.time()
 
@@ -347,10 +351,10 @@ class DurableConsumptionModelClass(ModelClass):
                     if par.do_print:
                         print(f'  w computed in {toc_w-tic_w:.1f} secs')
 
-                    if do_assert and par.solmethod in ['nvfi','negm']:
-                        assert np.all((sol.inv_w[t] > 0) & (np.isnan(sol.inv_w[t]) == False)), t 
-                        if par.solmethod in ['negm']:                                                       
-                            assert np.all((sol.q[t] > 0) & (np.isnan(sol.q[t]) == False)), t
+                    #if do_assert and par.solmethod in ['nvfi','negm']:
+                        #assert np.all((sol.inv_w[t] > 0) & (np.isnan(sol.inv_w[t]) == False)), t 
+                      #  if par.solmethod in ['negm']:                                                       
+                         #   assert np.all((sol.q[t] > 0) & (np.isnan(sol.q[t]) == False)), t
 
                     # oo. solve keeper problem
                     tic_keep = time.time()
