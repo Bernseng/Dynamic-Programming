@@ -63,8 +63,8 @@ class DurableConsumptionModelClass(ModelClass):
         
         # horizon and life cycle
         par.Tmin = 0 # age when entering the model
-        par.T = 90 - par.Tmin # age of death
-        par.Tr = 65 - par.Tmin # retirement age
+        par.T = 40 - par.Tmin # age of death
+        par.Tr = 30 - par.Tmin # retirement age
         par.G = 1.02 # growth in permanent income
         par.L = np.ones(par.T-1)
         par.L[0:par.Tr] = np.linspace(1,1/par.G,par.Tr) 
@@ -83,7 +83,7 @@ class DurableConsumptionModelClass(ModelClass):
         par.R = 1.03
         par.Rh = par.R + 0.05
         par.tau = 0.10
-        par.gamma = 0.05 
+        par.gamma = 0 # 0.05 
         par.delta = 0.15
         par.sigma_psi = 0.1
         par.sigma_xi = 0.1
@@ -114,9 +114,12 @@ class DurableConsumptionModelClass(ModelClass):
         par.sigma_d0 = 0.2
         par.mu_a0 = 0.2
         par.sigma_a0 = 0.1
-        par.simN = 10000
+        par.simN = 5000
         par.sim_seed = 1998
         par.euler_cutoff = 0.02
+        par.moments_minage = 10
+        par.moments_maxage = 35
+        par.moments_numsim = 1
 
         # misc
         par.solmethod = 'nvfi'
