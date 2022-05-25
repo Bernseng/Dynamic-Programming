@@ -246,7 +246,7 @@ def lifecycle(model,deciles:bool=False):
     simvarlist = [('p','$p_t$'),
                   ('y','$y_t$'),
                   ('n','$n_t$'),
-                  ('m','$m_t$'),
+                  ('b','$b_t$'),
                   ('c','$c_t$'),
                   ('a','$a_t$'),
                   ('discrete','adjuster share'),                  

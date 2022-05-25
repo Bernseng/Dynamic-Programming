@@ -34,7 +34,7 @@ def lifecycle(sim,sol,par):
             else:
                 p[t,i] = trans.p_plus_func(p[t-1,i],sim.psi[t,i],par,t-1)   
                 n[t,i] = trans.n_plus_func(d[t-1,i],par,sim.z[t])
-                b[t,i] = trans.b_plus_func(a[t-1,i],p[t,i],sim.xi[t,i],par)
+                b[t,i] = trans.m_plus_func(a[t-1,i],p[t,i],sim.xi[t,i],par)
             
             y[t,i] = p[t,i] * sim.xi[t,i] 
             
@@ -127,7 +127,7 @@ def euler_errors(sim,sol,par):
                     # ii. next-period states
                     p_plus = trans.p_plus_func(sim.p[t,i],psi,par)
                     n_plus = trans.n_plus_func(sim.d[t,i],par,sim.z)
-                    b_plus = trans.b_plus_func(sim.a[t,i],p_plus,xi,par)
+                    b_plus = trans.m_plus_func(sim.a[t,i],p_plus,xi,par)
 
                     # iii. weight
                     weight = psi_w*xi_w

@@ -33,16 +33,16 @@ def solve(t,sol,par):
     # a. keep
     for i_p in prange(par.Np):
         for i_n in range(par.Nn):
-            for i_m in range(par.Nm):
+            for i_b in range(par.Nb):
                             
                 # i. states
                 n = par.grid_n[i_n]
-                b = par.grid_m[i_m] + par.omega*n
+                b = par.grid_b[i_b] #+ par.omega*n
 
                 if b == 0: # forced c = 0 
-                    c_keep[i_p,i_n,i_m] = 0
-                    inv_v_keep[i_p,i_n,i_m] = 0
-                    inv_marg_u_keep[i_p,i_n,i_m] = 0
+                    c_keep[i_p,i_n,i_b] = 0
+                    inv_v_keep[i_p,i_n,i_b] = 0
+                    inv_marg_u_keep[i_p,i_n,i_b] = 0
                     continue
                 
                 # ii. optimal choice

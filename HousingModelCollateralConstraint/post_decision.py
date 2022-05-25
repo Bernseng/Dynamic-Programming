@@ -20,7 +20,7 @@ def compute_wq(t,sol,par,compute_q=False):
     for i_p in prange(par.Np):
 
         # allocate temporary containers
-        m_plus = np.zeros(par.Na) # container, same lenght as grid_a
+        b_plus = np.zeros(par.Na) # container, same lenght as grid_a
         x_plus = np.zeros(par.Na)
         w = np.zeros(par.Na) 
         inv_v_keep_plus = np.zeros(par.Na)
@@ -67,8 +67,8 @@ def compute_wq(t,sol,par,compute_q=False):
                 # v. next-period cash-on-hand and total resources
                 for i_a in range(par.Na):
         
-                    m_plus[i_a] = trans.m_plus_func(par.grid_a[i_n,i_a],p_plus,xi_plus,par) 
-                    x_plus[i_a] = trans.x_plus_func(m_plus[i_a],n_plus,par)
+                    b_plus[i_a] = trans.m_plus_func(par.grid_a[i_n,i_a],p_plus,xi_plus,par) 
+                    x_plus[i_a] = trans.x_plus_func(b_plus[i_a],n_plus,par)
                     
                 
                 # vi. interpolate
@@ -80,7 +80,7 @@ def compute_wq(t,sol,par,compute_q=False):
                 if compute_q:
                     linear_interp.interp_3d_only_last_vec_mon_rep(prep_keep,par.grid_p,par.grid_n,
                                                                   par.grid_b,sol.inv_marg_u_keep[t+1],
-                                                                  p_plus,n_plus,m_plus,
+                                                                  p_plus,n_plus,b_plus,
                                                                   inv_marg_u_keep_plus)
                     linear_interp.interp_2d_only_last_vec_mon_rep(prep_adj,par.grid_p,par.grid_x,
                                                                   sol.inv_marg_u_adj[t+1],p_plus,

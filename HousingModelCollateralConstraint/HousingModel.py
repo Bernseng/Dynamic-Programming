@@ -66,8 +66,8 @@ class HousingModelClass(ModelClass):
         
         # horizon and life cycle
         par.Tmin = 0 # age when entering the model
-        par.T = 5 - par.Tmin # age of death
-        par.Tr = 3 - par.Tmin # retirement age
+        par.T = 40 - par.Tmin # age of death
+        par.Tr = 35 - par.Tmin # retirement age
         par.G = 1.02 # growth in permanent income
         par.L = np.ones(par.T-1)
         par.L[0:par.Tr] = np.linspace(1,1/par.G,par.Tr) 
@@ -92,11 +92,11 @@ class HousingModelClass(ModelClass):
         par.Npsi = 5
         par.sigma_xi = 0.1
         par.Nxi = 5
-        par.pi = -0.1
+        par.pi = 0.0 # no big housing shocks
         par.sigma_epsilon = 0.02
         par.gamma = 0.05
         par.mu = 0.5
-        par.omega = 0.8*np.ones(par.T) # LTV ratio
+        par.omega = 0.0*np.ones(par.T) # LTV ratio
         par.omega[par.Tr-1:] = 0 # no borrowing in retirement
         
         # grids
@@ -111,8 +111,8 @@ class HousingModelClass(ModelClass):
         par.x_max = par.m_max + par.n_max
         par.Na = 100
         par.a_max = par.m_max+1.0
-        #par.Nb = 100
-        #par.b_max = par.x_max
+        par.Nb = 100
+        par.b_max = par.x_max
 
         # simulation
         par.sigma_p0 = 0.2
@@ -153,13 +153,13 @@ class HousingModelClass(ModelClass):
         par.grid_n = nonlinspace(0,par.n_max,par.Nn,1.1)
         par.grid_m = nonlinspace(0,par.m_max,par.Nm,1.1)
         par.grid_x = nonlinspace(0,par.x_max,par.Nx,1.1)
-        #par.grid_b = nonlinspace(0,par.b_max,par.Nb,1.1)
+        par.grid_b = nonlinspace(0,par.b_max,par.Nb,1.1)
 
         # b. post-decision states
         par.grid_a = np.nan + np.zeros((par.Nn,par.Na))
-        
+        #-par.omega[0]*par.grid_n[i_n]
         for i_n in range(par.Nn): 
-            par.grid_a[i_n,:] = nonlinspace(-par.omega[0]*par.grid_n[i_n],par.a_max,par.Na,1.1) # use first element to get omega=.8
+            par.grid_a[i_n,:] = nonlinspace(0,par.a_max,par.Na,1.1) # use first element to get omega=.8
         
         # c. shocks
         shocks = create_PT_shocks(
@@ -283,7 +283,7 @@ class HousingModelClass(ModelClass):
         sol.q = np.nan*np.zeros(post_shape)
         sol.q_c = np.nan*np.zeros(post_shape)
         sol.q_m = np.nan*np.zeros(post_shape)
-        #sol.q_b = np.nan*np.zeros(post_shape)
+        sol.q_b = np.nan*np.zeros(post_shape)
 
 
     def solve(self,do_assert=True):
@@ -405,7 +405,7 @@ class HousingModelClass(ModelClass):
         sim.p = np.zeros(sim_shape)
         sim.y = np.zeros(sim_shape)
         sim.m = np.zeros(sim_shape)
-        #sim.b = np.zeros(sim_shape)
+        sim.b = np.zeros(sim_shape)
 
         sim.n = np.zeros(sim_shape)
         sim.discrete = np.zeros(sim_shape,dtype=np.int)

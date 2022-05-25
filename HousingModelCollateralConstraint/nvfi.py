@@ -88,7 +88,7 @@ def obj_adj(d,x,inv_v_keep,grid_n,grid_b,omega):
     """ evaluate bellman equation """
 
     # a. cash-on-hand
-    b = x-d-omega*d
+    b = x-d+omega*d
 
     # b. durables
     n = d
