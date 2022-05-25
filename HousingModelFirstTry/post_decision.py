@@ -1,6 +1,6 @@
 import numpy as np
 from numba import njit, prange
-
+import time
 # consav
 from consav import linear_interp # for linear interpolation
 
@@ -18,6 +18,7 @@ def compute_wq(t,sol,par,compute_q=False):
 
     # loop over outermost post-decision state
     for i_p in prange(par.Np):
+        #tic = time.time()
 
         # allocate temporary containers
         m_plus = np.zeros(par.Na) # container, same lenght as grid_a
@@ -48,8 +49,6 @@ def compute_wq(t,sol,par,compute_q=False):
                 psi_plus_w = par.psi_w[ishock]
                 xi_plus = par.xi[ishock]
                 xi_plus_w = par.xi_w[ishock]
-
-                #for zshock in range(par.Nz):
 
                 # i. housing shocks
                 z_plus = par.z[ishock]    # par.z[zshock]
@@ -103,3 +102,5 @@ def compute_wq(t,sol,par,compute_q=False):
             # d. transform post decision value function
             for i_a in range(par.Na):
                 inv_w[i_p,i_n,i_a] = -1/w[i_a]
+        #toc = time.time()
+        #print(f'numba precompiled in {toc-tic:.1f} secs')

@@ -121,6 +121,9 @@ class DurableConsumptionModelClass(ModelClass):
         par.simN = 1000
         par.sim_seed = 1998
         par.euler_cutoff = 0.02
+        par.moments_minage = 20
+        par.moments_maxage = 35
+        par.moments_numsim = 1
 
         # misc
         par.solmethod = 'nvfi'
