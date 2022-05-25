@@ -43,26 +43,32 @@ def compute_wq(t,sol,par,compute_q=False):
             # c. loop over shocks and then end-of-period assets
             for ishock in range(par.Nshocks):
                 
-                # i. shocks
+                # i. 
+                ## income shocks
                 psi_plus = par.psi[ishock]
                 psi_plus_w = par.psi_w[ishock]
                 xi_plus = par.xi[ishock]
                 xi_plus_w = par.xi_w[ishock]
 
+                ## housing shocks
+                z_plus = par.z[ishock]
+                z_plus_w = par.z_w[ishock]
+
                 # ii. next-period income and durables
-                p_plus = trans.p_plus_func(p,psi_plus,par)
-                n_plus = trans.n_plus_func(n,par)
+                p_plus = trans.p_plus_func(p,psi_plus,par,t)
+                n_plus = trans.n_plus_func(n,par,z_plus)
 
                 # iii. prepare interpolators
                 prep_keep = linear_interp.interp_3d_prep(par.grid_p,par.grid_n,p_plus,n_plus,par.Na)
                 prep_adj = linear_interp.interp_2d_prep(par.grid_p,p_plus,par.Na)
 
                 # iv. weight
-                weight = psi_plus_w*xi_plus_w
+                weight = psi_plus_w*xi_plus_w*z_plus_w
 
                 # v. next-period cash-on-hand and total resources
                 for i_a in range(par.Na):
         
+                    #m_plus[i_a] = trans.m_plus_func(par.grid_a[i_n,i_a],p_plus,xi_plus,par)
                     m_plus[i_a] = trans.m_plus_func(par.grid_a[i_a],p_plus,xi_plus,par)
                     x_plus[i_a] = trans.x_plus_func(m_plus[i_a],n_plus,par)
                 

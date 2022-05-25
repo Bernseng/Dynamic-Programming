@@ -27,6 +27,7 @@ def value_of_choice(t,c,d,p,x,inv_v_keep,inv_v_adj,par):
         psi_w = par.psi_w[ishock]
         xi = par.xi[ishock]
         xi_w = par.xi_w[ishock]
+
         
         # ii. next-period states
         p_plus = trans.p_plus_func(p,psi,par)

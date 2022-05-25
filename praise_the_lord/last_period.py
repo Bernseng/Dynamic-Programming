@@ -17,35 +17,6 @@ def obj_last_period(d,x,par):
 
     return -utility.func(c,d,par)
 
-@njit
-def obj_last_period_full_2d(d,x,par):
-    """ objective function in last period """
-    
-    # note, use the assumption that gamma = 0.5 -> d1 = d2 = d
-
-    # implied consumption (rest)
-    c = x-2*d
-
-    return -utility.func_2d(c,d,d,par)
-
-@njit
-def obj_last_period_d1_2d(d1,n2,x,par):
-    """ objective function in last period """
-    
-    # implied consumption (rest)
-    c = x-d1
-
-    return -utility.func_2d(c,d1,n2,par)
-
-@njit
-def obj_last_period_d2_2d(d2,n1,x,par):
-    """ objective function in last period """
-    
-    # implied consumption (rest)
-    c = x-d2
-
-    return -utility.func_2d(c,n1,d2,par)
-
 @njit(parallel=True)
 def solve(t,sol,par):
     """ solve the problem in the last period """

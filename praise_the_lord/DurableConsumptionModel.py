@@ -20,7 +20,7 @@ import numpy as np
 from consav import ModelClass, jit # baseline model class and jit
 
 from consav.grids import nonlinspace # grids
-from consav.quadrature import create_PT_shocks # income shocks
+from quadrature import create_PT_shocks, normal_gauss_hermite # income shocks
 
 # local modules
 import last_period
@@ -50,9 +50,9 @@ class DurableConsumptionModelClass(ModelClass):
         self.savefolder = 'saved'
 
         # d. list not-floats for safe type inference
-        self.not_floats = ['solmethod','T','t','simN','sim_seed','cppthreads',
+        self.not_floats = ['housing_shock','solmethod','T','t','simN','sim_seed',
                            'Npsi','Nxi','Nm','Np','Nn','Nx','Na','Nshocks',
-                           'do_2d','do_print','do_print_period','do_marg_u','do_simple_wq']
+                           'do_print','do_print_period','do_marg_u']
 
     def setup(self):
         """ set baseline parameters """
@@ -61,30 +61,39 @@ class DurableConsumptionModelClass(ModelClass):
 
         # a. baseline parameters
         
-        # horizon
-        par.T = 5
+        # horizon and life cycle
+        par.Tmin = 0 # age when entering the model
+        par.T = 35 - par.Tmin # age of death
+        par.Tr = 25 - par.Tmin # retirement age
+        par.G = 1.02 # growth in permanent income
+        par.L = np.ones(par.T-1)
+        par.L[0:par.Tr] = np.linspace(1,1/par.G,par.Tr) 
+        par.L[par.Tr-1] = 0.67 # drop in permanent income at retirement age
+        par.L[par.Tr-1:] = par.L[par.Tr-1:]/par.G # constant permanent income after retirement
         
         # preferences
         par.beta = 0.965
         par.rho = 2.0
         par.alpha = 0.9
         par.d_ubar = 1e-2
+        par.theta = 0.8
 
         # returns and income
+        par.housing_shock = True
         par.R = 1.03
+        par.Rh = par.R + 0.05
+        par.Nz = 10 
         par.tau = 0.10
-        par.tau1 = 0.08
-        par.tau2 = 0.12
+        par.gamma = 0.05 
         par.delta = 0.15
-        par.delta1 = 0.10
-        par.delta2 = 0.20
-        par.gamma = 0.50 # note: the last_period.solve_2d function must be updated if this value is changed
         par.sigma_psi = 0.1
-        par.Npsi = 5
         par.sigma_xi = 0.1
+        par.sigma_epsilon = 0.02
+        par.Npsi = 5
         par.Nxi = 5
-        par.pi = 0.0
-        par.mu = 0.5
+        par.pi = -0.1
+        par.mu = 0.5    # probably remove this
+        par.omega = np.zeros(par.T)
         
         # grids
         par.Np = 50
@@ -105,7 +114,7 @@ class DurableConsumptionModelClass(ModelClass):
         par.sigma_d0 = 0.2
         par.mu_a0 = 0.2
         par.sigma_a0 = 0.1
-        par.simN = 100000
+        par.simN = 10000
         par.sim_seed = 1998
         par.euler_cutoff = 0.02
 
@@ -141,12 +150,24 @@ class DurableConsumptionModelClass(ModelClass):
         
         # b. post-decision states
         par.grid_a = nonlinspace(0,par.a_max,par.Na,1.1)
+        #par.grid_a = np.nan + np.zeros((par.Nn,par.Na))
+        
+        #for i_n in range(par.Nn): 
+        #    par.grid_a[i_n,:] = nonlinspace(-par.omega[0]*par.grid_n[i_n],par.a_max,par.Na,1.1)
         
         # c. shocks
+
         shocks = create_PT_shocks(
-            par.sigma_psi,par.Npsi,par.sigma_xi,par.Nxi,
-            par.pi,par.mu)
-        par.psi,par.psi_w,par.xi,par.xi_w,par.Nshocks = shocks
+            sigma_psi=par.sigma_psi,
+            Npsi=par.Npsi,
+            sigma_xi=par.sigma_xi,
+            Nxi=par.Nxi,
+            sigma_epsilon=par.sigma_epsilon,
+            Nz=par.Nz,
+            gamma=par.gamma,
+            pi=par.pi,
+            )
+        par.psi,par.psi_w,par.xi,par.xi_w,par.z,par.z_w,par.Nshocks = shocks
 
         # d. set seed
         np.random.seed(par.sim_seed)
@@ -156,34 +177,6 @@ class DurableConsumptionModelClass(ModelClass):
         par.time_keep = np.zeros(par.T)
         par.time_adj = np.zeros(par.T)
         par.time_adj_full = np.zeros(par.T)
-
-
-    def checksum(self,simple=False,T=1):
-        """ calculate and print checksum """
-
-        par = self.par
-        sol = self.sol
-
-        if simple:
-            print(f'checksum, inv_v_keep: {np.mean(sol.inv_v_keep[0]):.8f}')
-            print(f'checksum, inv_v_adj: {np.mean(sol.inv_v_adj[0]):.8f}')
-            return
-
-        print('')
-        for t in range(T):
-
-            if t < par.T-1:
-                print(f'checksum, inv_w: {np.mean(sol.inv_w[t]):.8f}')
-                print(f'checksum, q: {np.mean(sol.q[t]):.8f}')
-
-            print(f'checksum, c_keep: {np.mean(sol.c_keep[t]):.8f}')
-            print(f'checksum, d_adj: {np.mean(sol.d_adj[t]):.8f}')
-            print(f'checksum, c_adj: {np.mean(sol.c_adj[t]):.8f}')
-            print(f'checksum, inv_v_keep: {np.mean(sol.inv_v_keep[t]):.8f}')
-            print(f'checksum, inv_marg_u_keep: {np.mean(sol.inv_marg_u_keep[t]):.8f}')
-            print(f'checksum, inv_v_adj: {np.mean(sol.inv_v_adj[t]):.8f}')
-            print(f'checksum, inv_marg_u_adj: {np.mean(sol.inv_marg_u_adj[t]):.8f}')
-            print('')
 
     #########
     # solve #
@@ -365,7 +358,6 @@ class DurableConsumptionModelClass(ModelClass):
 
         # a. initial and final
         sim.p0 = np.zeros(par.simN)
-
         sim.d0 = np.zeros(par.simN)
         sim.a0 = np.zeros(par.simN)
 
@@ -374,6 +366,7 @@ class DurableConsumptionModelClass(ModelClass):
         # b. states and choices
         sim_shape = (par.T,par.simN)
         sim.p = np.zeros(sim_shape)
+        sim.y = np.zeros(sim_shape)
         sim.m = np.zeros(sim_shape)
 
         sim.n = np.zeros(sim_shape)
@@ -392,6 +385,7 @@ class DurableConsumptionModelClass(ModelClass):
         # d. shocks
         sim.psi = np.zeros((par.T,par.simN))
         sim.xi = np.zeros((par.T,par.simN))
+        sim.z = np.zeros(par.T)    # economy wide shock
 
     def simulate(self,do_utility=False,do_euler_error=False):
         """ simulate the model """
@@ -409,9 +403,10 @@ class DurableConsumptionModelClass(ModelClass):
 
         I = np.random.choice(par.Nshocks,
             size=(par.T,par.simN), 
-            p=par.psi_w*par.xi_w)
+            p=par.psi_w*par.xi_w*par.z_w)
         sim.psi[:,:] = par.psi[I]
         sim.xi[:,:] = par.xi[I]
+        sim.z[:] = par.z[I[:,0]]
 
         # b. call
         with jit(self) as model:
@@ -474,72 +469,72 @@ class DurableConsumptionModelClass(ModelClass):
     # analyze #
     ###########
 
-    def analyze(self,solve=True,do_assert=True,**kwargs):
+    # def analyze(self,solve=True,do_assert=True,**kwargs):
         
-        par = self.par
+    #     par = self.par
 
-        for key,val in kwargs.items():
-            setattr(par,key,val)
+    #     for key,val in kwargs.items():
+    #         setattr(par,key,val)
         
-        self.create_grids()
+    #     self.create_grids()
 
-        # solve and simulate
-        if solve:
-            self.precompile_numba()
-            self.solve(do_assert)
-        self.simulate(do_euler_error=True,do_utility=True)
+    #     # solve and simulate
+    #     if solve:
+    #         self.precompile_numba()
+    #         self.solve(do_assert)
+    #     self.simulate(do_euler_error=True,do_utility=True)
 
-        # print
-        self.print_analysis()
+    #     # print
+    #     self.print_analysis()
 
-    def print_analysis(self):
+    # def print_analysis(self):
 
-        par = self.par
-        sim = self.sim
+    #     par = self.par
+    #     sim = self.sim
 
-        def avg_euler_error(model,I):
-            if I.any():
-                return np.nanmean(model.sim.euler_error_rel.ravel()[I])
-            else:
-                return np.nan
+    #     def avg_euler_error(model,I):
+    #         if I.any():
+    #             return np.nanmean(model.sim.euler_error_rel.ravel()[I])
+    #         else:
+    #             return np.nan
 
-        def percentile_euler_error(model,I,p):
-            if I.any():
-                return np.nanpercentile(model.sim.euler_error_rel.ravel()[I],p)
-            else:
-                return np.nan
+    #     def percentile_euler_error(model,I,p):
+    #         if I.any():
+    #             return np.nanpercentile(model.sim.euler_error_rel.ravel()[I],p)
+    #         else:
+    #             return np.nan
 
-        # population
-        keepers = sim.discrete[:-1,:].ravel() == 0
-        adjusters = sim.discrete[:-1,:].ravel() > 0
-        everybody = keepers | adjusters
+    #     # population
+    #     keepers = sim.discrete[:-1,:].ravel() == 0
+    #     adjusters = sim.discrete[:-1,:].ravel() > 0
+    #     everybody = keepers | adjusters
 
-        # print
-        time = par.time_w+par.time_adj+par.time_keep
-        txt = f'Name: {self.name} (solmethod = {par.solmethod})\n'
-        txt += f'Grids: (p,n,m,x,a) = ({par.Np},{par.Nn},{par.Nm},{par.Nx},{par.Na})\n'
+    #     # print
+    #     time = par.time_w+par.time_adj+par.time_keep
+    #     txt = f'Name: {self.name} (solmethod = {par.solmethod})\n'
+    #     txt += f'Grids: (p,n,m,x,a) = ({par.Np},{par.Nn},{par.Nm},{par.Nx},{par.Na})\n'
         
-        txt += 'Timings:\n'
-        txt += f' total: {np.sum(time):.1f}\n'
-        txt += f'     w: {np.sum(par.time_w):.1f}\n'
-        txt += f'  keep: {np.sum(par.time_keep):.1f}\n'
-        txt += f'   adj: {np.sum(par.time_adj):.1f}\n'
-        txt += f'Utility: {np.mean(sim.utility):.6f}\n'
+    #     txt += 'Timings:\n'
+    #     txt += f' total: {np.sum(time):.1f}\n'
+    #     txt += f'     w: {np.sum(par.time_w):.1f}\n'
+    #     txt += f'  keep: {np.sum(par.time_keep):.1f}\n'
+    #     txt += f'   adj: {np.sum(par.time_adj):.1f}\n'
+    #     txt += f'Utility: {np.mean(sim.utility):.6f}\n'
         
-        txt += 'Euler errors:\n'
-        txt += f'     total: {avg_euler_error(self,everybody):.2f} ({percentile_euler_error(self,everybody,5):.2f},{percentile_euler_error(self,everybody,95):.2f})\n'
-        txt += f'   keepers: {avg_euler_error(self,keepers):.2f} ({percentile_euler_error(self,keepers,5):.2f},{percentile_euler_error(self,keepers,95):.2f})\n'
-        txt += f' adjusters: {avg_euler_error(self,adjusters):.2f} ({percentile_euler_error(self,adjusters,5):.2f},{percentile_euler_error(self,adjusters,95):.2f})\n'
+    #     txt += 'Euler errors:\n'
+    #     txt += f'     total: {avg_euler_error(self,everybody):.2f} ({percentile_euler_error(self,everybody,5):.2f},{percentile_euler_error(self,everybody,95):.2f})\n'
+    #     txt += f'   keepers: {avg_euler_error(self,keepers):.2f} ({percentile_euler_error(self,keepers,5):.2f},{percentile_euler_error(self,keepers,95):.2f})\n'
+    #     txt += f' adjusters: {avg_euler_error(self,adjusters):.2f} ({percentile_euler_error(self,adjusters,5):.2f},{percentile_euler_error(self,adjusters,95):.2f})\n'
 
-        txt += 'Moments:\n'
+    #     txt += 'Moments:\n'
 
-        txt += f' adjuster share: {np.mean(sim.discrete):.3f}\n'
+    #     txt += f' adjuster share: {np.mean(sim.discrete):.3f}\n'
         
-        txt += f'         mean c: {np.mean(sim.c):.3f}\n'
-        txt += f'          var c: {np.var(sim.c):.3f}\n'
+    #     txt += f'         mean c: {np.mean(sim.c):.3f}\n'
+    #     txt += f'          var c: {np.var(sim.c):.3f}\n'
 
 
-        txt += f'         mean d: {np.mean(sim.d):.3f}\n'
-        txt += f'          var d: {np.var(sim.d):.3f}\n'
+    #     txt += f'         mean d: {np.mean(sim.d):.3f}\n'
+    #     txt += f'          var d: {np.var(sim.d):.3f}\n'
 
-        print(txt)
+    #     print(txt)
