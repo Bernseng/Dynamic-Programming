@@ -149,11 +149,11 @@ class DurableConsumptionModelClass(ModelClass):
         par.grid_x = nonlinspace(0,par.x_max,par.Nx,1.1)
         
         # b. post-decision states
-        par.grid_a = nonlinspace(0,par.a_max,par.Na,1.1)
-        #par.grid_a = np.nan + np.zeros((par.Nn,par.Na))
+        #par.grid_a = nonlinspace(0,par.a_max,par.Na,1.1)
+        par.grid_a = np.nan + np.zeros((par.Nn,par.Na))
         
-        #for i_n in range(par.Nn): 
-        #    par.grid_a[i_n,:] = nonlinspace(-par.omega[0]*par.grid_n[i_n],par.a_max,par.Na,1.1)
+        for i_n in range(par.Nn): 
+           par.grid_a[i_n,:] = nonlinspace(-par.omega[0]*par.grid_n[i_n],par.a_max,par.Na,1.1)
         
         # c. shocks
 

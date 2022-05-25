@@ -156,18 +156,7 @@ def create_PT_shocks(sigma_psi,Npsi,sigma_xi,Nxi,sigma_epsilon,Nz,gamma,pi):
     else:
         z = eps
         z_w = eps_w 
-
-    # b. add low inncome shock
-    # if pi > 0:
-         
-    #     # i. weights
-    #     xi_w *= (1.0-pi)
-    #     xi_w = np.insert(xi_w,0,pi)
-
-    #     # ii. values
-    #     xi = (xi-mu*pi)/(1.0-pi)
-    #     xi = np.insert(xi,0,mu)
-    
+        
     # c. tensor product matrix: ‘ij’-indexing of output
     psi,xi,z = np.meshgrid(psi,xi,z,indexing='ij')
     psi_w,xi_w,z_w = np.meshgrid(psi_w,xi_w,z_w,indexing='ij')
