@@ -51,7 +51,7 @@ class DurableConsumptionModelClass(ModelClass):
 
         # d. list not-floats for safe type inference
         self.not_floats = ['housing_shock','solmethod','T','t','simN','sim_seed',
-                           'Npsi','Nxi','Nz','Nm','Np','Nn','Nx','Na','Nshocks',
+                           'Npsi','Nxi','Nm','Np','Nn','Nx','Na','Nshocks',
                            'do_print','do_print_period','do_marg_u']
 
     def setup(self):
@@ -82,13 +82,13 @@ class DurableConsumptionModelClass(ModelClass):
         par.housing_shock = True
         par.R = 1.03
         par.Rh = par.R + 0.05
+        par.Nz = 10 
         par.tau = 0.10
         par.gamma = 0 # 0.05 
         par.delta = 0.15
         par.sigma_psi = 0.1
         par.sigma_xi = 0.1
         par.sigma_epsilon = 0.02
-        par.Nz = 5 
         par.Npsi = 5
         par.Nxi = 5
         par.pi = -0.1
