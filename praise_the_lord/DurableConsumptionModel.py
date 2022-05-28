@@ -109,6 +109,7 @@ class DurableConsumptionModelClass(ModelClass):
         par.a_max = par.m_max+1.0
 
         # simulation
+        par.mpc_eps = 0.00855 # because mean_y * 0.75 pct / same ratio as KaplanViolante2022
         par.sigma_p0 = 0.2
         par.mu_d0 = 0.8
         par.sigma_d0 = 0.2
@@ -378,6 +379,7 @@ class DurableConsumptionModelClass(ModelClass):
         sim.d = np.zeros(sim_shape)
         sim.c = np.zeros(sim_shape)
         sim.a = np.zeros(sim_shape)
+        sim.mpc = np.zeros(sim_shape)
         
         # c. euler
         euler_shape = (par.T-1,par.simN)
