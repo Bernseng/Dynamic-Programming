@@ -4,6 +4,7 @@ from numba import njit, prange
 from consav import linear_interp
 
 import trans
+import tools
 
 #@njit(parallel=True)
 def life_cycle(par,sol,sim):
@@ -21,7 +22,7 @@ def life_cycle(par,sol,sim):
     sol_m = sol.m
 
     # loop over first households and then time
-    for t in prange(par.T):
+    for t in range(par.T):
         for i in range(par.simN):
             
             # a. solution
@@ -29,7 +30,7 @@ def life_cycle(par,sol,sim):
             grid_c = sol_c[t,:]
             
             # b. consumption
-            c[t,i] = linear_interp.interp_1d(grid_m,grid_c,m[t,i])
+            c[t,i] = tools.interp_linear_1d_scalar(grid_m,grid_c,m[t,i])
             a[t,i] = m[t,i] - c[t,i]
 
             # c. next-period
@@ -42,7 +43,7 @@ def life_cycle(par,sol,sim):
             
             y[t,i] = trans.y_plus_func(p[t,i],sim.xi[t,i],par,t-1)
             
-            mpc[t,i] = (linear_interp.interp_1d(grid_m,grid_c,m[t,i]+par.mpc_eps)-c[t,i])/par.mpc_eps
+            mpc[t,i] = (tools.interp_linear_1d_scalar(grid_m,grid_c,m[t,i])-c[t,i])/par.mpc_eps
             
             
             

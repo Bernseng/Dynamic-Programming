@@ -29,6 +29,7 @@ import quadrature
 import utility
 import last_period
 import egm
+import simul
 
 ############
 # 2. model #
@@ -349,7 +350,8 @@ class ConsumptionSavingModelClass(ModelClass):
             sol = model.sol
             sim = model.sim
             
-            simulate.life_cycle(par,sol,sim)
+            simul.life_cycle(par,sol,sim)
+            #simulate.life_cycle(par,sol,sim)
 
         toc = time.time()
 
