@@ -1,4 +1,6 @@
+from cProfile import label
 import numpy as np
+import pandas as pd
 import math
 import matplotlib.pyplot as plt
 from matplotlib import cm
@@ -230,7 +232,7 @@ def _egm(model,t,i_p,i_n):
 # lifecycle #
 #############
 
-def lifecycle(model,deciles:bool=False):
+def lifecycle(model,deciles:bool=False, m_quantiles:bool=False):
     '''
     Plot the lifecycle of the model.
     Keyword arguments:
@@ -249,7 +251,8 @@ def lifecycle(model,deciles:bool=False):
                   ('m','$m_t$'),
                   ('c','$c_t$'),
                   ('a','$a_t$'),
-                  ('discrete','adjuster share'),                  
+                  ('discrete','adjuster share'),
+                  ('mpc','$\mathcal{MPC}_t$'),                  
                   ]
 
     # determine number of rows in figure, given the number of columns
@@ -264,16 +267,58 @@ def lifecycle(model,deciles:bool=False):
         ax = fig.add_subplot(rows,cols,i+1)
 
         simdata = getattr(sim,simvar)[:par.T,:]
+        
+        if m_quantiles:
+            if simvar == 'm':
+                index25 = [
+                pd.Series(simdata[t,:])[
+                pd.Series(simdata[t,:]).index[
+                pd.Series(simdata[t,:]).rank(method="max", pct=True)<=0.25]].idxmax()
+                for t in age
+                ]
+                index50 = [
+                pd.Series(simdata[t,:])[
+                pd.Series(simdata[t,:]).index[
+                pd.Series(simdata[t,:]).rank(method="max", pct=True)<=0.5]].idxmax()
+                for t in age
+                ]
+                index75 = [
+                pd.Series(simdata[t,:])[
+                pd.Series(simdata[t,:]).index[
+                pd.Series(simdata[t,:]).rank(method="max", pct=True)<=0.75]].idxmax()
+                for t in age
+                ]
+
+        # plot
         if deciles:
-            if simvar not in ['discrete']:
+            if simvar not in ['discrete','mpc']:
                 series = np.percentile(simdata, np.arange(0, 100, 10),axis=1)
                 ax.plot(age, series.T,lw=2)
                 if i == 0: ax.legend(np.arange(0, 100, 10),title='Deciles',fontsize=8)
             else:
-                ax.plot(age,np.mean(simdata,axis=1),lw=2)
+                if m_quantiles:
+                    if simvar not in ['mpc']:
+                        ax.plot(age,np.mean(simdata,axis=1),lw=2)
+                    else:
+                        ax.plot(age,
+                            np.array([simdata[t,i] for t,i in zip(age,index25)]),
+                            label='25%',
+                            lw=2)
+                        ax.plot(age,
+                            np.array([simdata[t,i] for t,i in zip(age,index50)]),
+                            label='50%',
+                            lw=2)
+                        ax.plot(age,
+                            np.array([simdata[t,i] for t,i in zip(age,index75)]),
+                            label='75%',
+                            lw=2)
+                        ax.legend(title='Cash-on-hand quantiles',fontsize=8)
+                else:
+                    ax.plot(age,np.mean(simdata,axis=1),lw=2)
+
         else:
             ax.plot(age,np.mean(simdata,axis=1),lw=2)
-            if simvar not in ['discrete']:
+            if simvar not in ['discrete','mpc']:
                 ax.plot(age,np.percentile(simdata,25,axis=1),
                     ls='--',lw=1,color='black')
                 ax.plot(age,np.percentile(simdata,75,axis=1),
@@ -285,7 +330,7 @@ def lifecycle(model,deciles:bool=False):
             ax.xaxis.set_ticks(age)
 
         ax.grid(True)
-        if simvar in ['a','discrete']:
+        if i in [len(simvarlist)-i-1 for i in range(cols)]:
             ax.set_xlabel('age')
 
     plt.show()

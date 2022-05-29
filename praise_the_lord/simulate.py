@@ -20,6 +20,7 @@ def lifecycle(sim,sol,par):
     c = sim.c
     d = sim.d
     a = sim.a
+    mpc = sim.mpc
     discrete = sim.discrete
     
     for t in range(par.T):
@@ -39,17 +40,22 @@ def lifecycle(sim,sol,par):
 
             # b. optimal choices and post decision states
 
-            optimal_choice(t,p[t,i],n[t,i],m[t,i],discrete[t,i:],d[t,i:],c[t,i:],a[t,i:],sol,par)
+            optimal_choice(t,p[t,i],n[t,i],m[t,i],discrete[t,i:],d[t,i:],c[t,i:],a[t,i:],sol,par,mpc[t,i:])
             
 @njit            
-def optimal_choice(t,p,n,m,discrete,d,c,a,sol,par):
+def optimal_choice(t,p,n,m,discrete,d,c,a,sol,par,mpc):
 
     x = trans.x_plus_func(m,n,par)
+    x_mpc = trans.x_plus_func(m+par.mpc_eps,n,par)
 
     # a. discrete choice
-    inv_v_keep = linear_interp.interp_3d(par.grid_p,par.grid_n,par.grid_m,sol.inv_v_keep[t],p,n,m)
+    inv_v_keep = linear_interp.interp_3d(par.grid_p,par.grid_n,par.grid_m,sol.inv_v_keep[t],p,n,m)    
+    inv_v_keep_mpc = linear_interp.interp_3d(par.grid_p,par.grid_n,par.grid_m,sol.inv_v_keep[t],p,n,m+par.mpc_eps)
     inv_v_adj = linear_interp.interp_2d(par.grid_p,par.grid_x,sol.inv_v_adj[t],p,x)    
+    inv_v_adj_mpc = linear_interp.interp_2d(par.grid_p,par.grid_x,sol.inv_v_adj[t],p,x_mpc)    
     adjust = inv_v_adj > inv_v_keep
+    adjust_mpc = inv_v_adj_mpc > inv_v_keep_mpc
+
     
     # b. continuous choices
     if adjust:
@@ -63,6 +69,14 @@ def optimal_choice(t,p,n,m,discrete,d,c,a,sol,par):
         c[0] = linear_interp.interp_2d(
             par.grid_p,par.grid_x,sol.c_adj[t],
             p,x)
+
+        if adjust==adjust_mpc:
+            mpc[0] = (linear_interp.interp_2d(par.grid_p,par.grid_x,sol.c_adj[t],
+                p,x_mpc) - c[0]) / par.mpc_eps
+        else:
+            mpc[0] = (linear_interp.interp_3d(
+            par.grid_p,par.grid_n,par.grid_m,sol.c_keep[t],
+            p,n,m+par.mpc_eps) - c[0]) / par.mpc_eps
 
         tot = d[0]+c[0]
         if tot > x: 
@@ -82,141 +96,19 @@ def optimal_choice(t,p,n,m,discrete,d,c,a,sol,par):
             par.grid_p,par.grid_n,par.grid_m,sol.c_keep[t],
             p,n,m)
 
-        if c[0] > m: 
-            c[0] = m
-            a[0] = 0.0
+        if adjust==adjust_mpc:
+            mpc[0] = (linear_interp.interp_3d(
+            par.grid_p,par.grid_n,par.grid_m,sol.c_keep[t],
+            p,n,m+par.mpc_eps) - c[0]) / par.mpc_eps
         else:
-            a[0] = m - c[0]
-
-@njit            
-def optimal_choice_2d(t,p,n1,n2,m,discrete,d1,d2,c,a,sol,par):
-
-    # a. discrete choice
-    inv_v = 0
-    inv_v_keep = linear_interp.interp_4d(par.grid_p,par.grid_n,par.grid_n,par.grid_m,sol.inv_v_keep_2d[t],p,n1,n2,m)
-
-    x_full = m + (1-par.tau1)*n1 + (1-par.tau2)*n2
-    inv_v_adj_full = linear_interp.interp_2d(par.grid_p,par.grid_x,sol.inv_v_adj_full_2d[t],p,x_full)
-    
-    x_d1 = m + (1-par.tau1)*n1
-    inv_v_adj_d1 = linear_interp.interp_3d(par.grid_p,par.grid_n,par.grid_x,sol.inv_v_adj_d1_2d[t],p,n2,x_d1)
-
-    x_d2 = m + (1-par.tau2)*n2
-    inv_v_adj_d2 = linear_interp.interp_3d(par.grid_p,par.grid_n,par.grid_x,sol.inv_v_adj_d2_2d[t],p,n1,x_d2)
-
-    keep = False
-    adj_full = False
-    adj_d1 = False
-    adj_d2 = False
-
-    if inv_v_keep > inv_v:
-        inv_v = inv_v_keep
-        keep = True
-
-    if inv_v_adj_full > inv_v:
-        inv_v = inv_v_adj_full
-        keep = False
-        adj_full = True
-
-    if inv_v_adj_d1 > inv_v:
-        inv_v = inv_v_adj_d1
-        keep = False
-        adj_full = False
-        adj_d1 = True
-
-    if inv_v_adj_d2 > inv_v:
-        inv_v = inv_v_adj_d2
-        keep = False
-        adj_full = False
-        adj_d1 = False
-        adj_d2 = True
-
-    # b. continuous choices
-    if keep: 
-            
-        discrete[0] = 0
-
-        d1[0] = n1
-        d2[0] = n2
-
-        c[0] = linear_interp.interp_4d(
-            par.grid_p,par.grid_n,par.grid_n,par.grid_m,sol.c_keep_2d[t],
-            p,n1,n2,m)
+            mpc[0] = (linear_interp.interp_2d(par.grid_p,par.grid_x,sol.c_adj[t],
+                p,x_mpc) - c[0]) / par.mpc_eps        
 
         if c[0] > m: 
             c[0] = m
             a[0] = 0.0
         else:
             a[0] = m - c[0]
-
-    elif adj_full:
-
-        discrete[0] = 1
-        
-        d1[0] = linear_interp.interp_2d(
-            par.grid_p,par.grid_x,sol.d1_adj_full_2d[t],
-            p,x_full)
-
-        d2[0] = linear_interp.interp_2d(
-            par.grid_p,par.grid_x,sol.d2_adj_full_2d[t],
-            p,x_full)            
-
-        c[0] = linear_interp.interp_2d(
-            par.grid_p,par.grid_x,sol.c_adj_full_2d[t],
-            p,x_full)
-
-        tot = d1[0]+d2[0]+c[0]
-        if tot > x_full: 
-            d1[0] *= x_full/tot
-            d2[0] *= x_full/tot
-            c[0] *= x_full/tot
-            a[0] = 0.0
-        else:
-            a[0] = x_full - tot
-            
-    elif adj_d1:
-
-        discrete[0] = 2
-        
-        d1[0] = linear_interp.interp_3d(
-            par.grid_p,par.grid_n,par.grid_x,sol.d1_adj_d1_2d[t],
-            p,n2,x_d1)
-
-        d2[0] = n2           
-
-        c[0] = linear_interp.interp_3d(
-            par.grid_p,par.grid_n,par.grid_x,sol.c_adj_d1_2d[t],
-            p,n2,x_d1)
-
-        tot = d1[0]+c[0]
-        if tot > x_d1: 
-            d1[0] *= x_d1/tot
-            c[0] *= x_d1/tot
-            a[0] = 0.0
-        else:
-            a[0] = x_d1 - tot
-
-    elif adj_d2:
-
-        discrete[0] = 3
-        
-        d1[0] = n1
-
-        d2[0] = linear_interp.interp_3d(
-            par.grid_p,par.grid_n,par.grid_x,sol.d2_adj_d2_2d[t],
-            p,n1,x_d2)
-
-        c[0] = linear_interp.interp_3d(
-            par.grid_p,par.grid_n,par.grid_x,sol.c_adj_d2_2d[t],
-            p,n1,x_d2)
-
-        tot = d2[0]+c[0]
-        if tot > x_d2: 
-            d2[0] *= x_d2/tot
-            c[0] *= x_d2/tot
-            a[0] = 0.0
-        else:
-            a[0] = x_d2 - tot            
 
 @njit            
 def euler_errors(sim,sol,par):

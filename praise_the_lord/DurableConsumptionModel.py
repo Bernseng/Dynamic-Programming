@@ -51,7 +51,7 @@ class DurableConsumptionModelClass(ModelClass):
 
         # d. list not-floats for safe type inference
         self.not_floats = ['housing_shock','solmethod','T','t','simN','sim_seed',
-                           'Npsi','Nxi','Nz','Nm','Np','Nn','Nx','Na','Nshocks',
+                           'Npsi','Nxi','Nm','Np','Nn','Nx','Na','Nshocks',
                            'do_print','do_print_period','do_marg_u']
 
     def setup(self):
@@ -63,8 +63,8 @@ class DurableConsumptionModelClass(ModelClass):
         
         # horizon and life cycle
         par.Tmin = 0 # age when entering the model
-        par.T = 90 - par.Tmin # age of death
-        par.Tr = 65 - par.Tmin # retirement age
+        par.T = 40 - par.Tmin # age of death
+        par.Tr = 30 - par.Tmin # retirement age
         par.G = 1.02 # growth in permanent income
         par.L = np.ones(par.T-1)
         par.L[0:par.Tr] = np.linspace(1,1/par.G,par.Tr) 
@@ -82,13 +82,13 @@ class DurableConsumptionModelClass(ModelClass):
         par.housing_shock = True
         par.R = 1.03
         par.Rh = par.R + 0.05
+        par.Nz = 10 
         par.tau = 0.10
-        par.gamma = 0.05 
+        par.gamma = 0 # 0.05 
         par.delta = 0.15
         par.sigma_psi = 0.1
         par.sigma_xi = 0.1
         par.sigma_epsilon = 0.02
-        par.Nz = 5 
         par.Npsi = 5
         par.Nxi = 5
         par.pi = -0.1
@@ -109,14 +109,18 @@ class DurableConsumptionModelClass(ModelClass):
         par.a_max = par.m_max+1.0
 
         # simulation
+        par.mpc_eps = 0.00855 # because mean_y * 0.75 pct / same ratio as KaplanViolante2022
         par.sigma_p0 = 0.2
         par.mu_d0 = 0.8
         par.sigma_d0 = 0.2
         par.mu_a0 = 0.2
         par.sigma_a0 = 0.1
-        par.simN = 10000
+        par.simN = 5000
         par.sim_seed = 1998
         par.euler_cutoff = 0.02
+        par.moments_minage = 10
+        par.moments_maxage = 35
+        par.moments_numsim = 1
 
         # misc
         par.solmethod = 'nvfi'
@@ -375,6 +379,7 @@ class DurableConsumptionModelClass(ModelClass):
         sim.d = np.zeros(sim_shape)
         sim.c = np.zeros(sim_shape)
         sim.a = np.zeros(sim_shape)
+        sim.mpc = np.zeros(sim_shape)
         
         # c. euler
         euler_shape = (par.T-1,par.simN)
