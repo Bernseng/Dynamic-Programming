@@ -80,7 +80,7 @@ class ConsumptionSavingModelClass(ModelClass):
         par.sigma_xi = 0.1
         par.Npsi = 5
         par.Nxi = 5
-        par.eps_mpc = 0.00855
+        par.mpc_eps = 0.00855
         
         # grids
         par.Nm = 100
@@ -294,7 +294,7 @@ class ConsumptionSavingModelClass(ModelClass):
         sim.utility = np.zeros(par.simN) # necessary?
         
         # states and choices
-        sim_shape = (par.simN,par.T)
+        sim_shape = (par.T,par.simN)
         sim.m = np.zeros(sim_shape)
         sim.y = np.zeros(sim_shape)
         sim.p = np.zeros(sim_shape)
@@ -312,6 +312,9 @@ class ConsumptionSavingModelClass(ModelClass):
         # shocks
         sim.psi = np.zeros(sim_shape)
         sim.xi = np.zeros(sim_shape)
+        
+        # mpc
+        sim.mpc = np.zeros(sim_shape)
         
         # euler
         euler_shape = (par.T-1,par.simN)
@@ -334,7 +337,7 @@ class ConsumptionSavingModelClass(ModelClass):
 
         # shocks
         I = np.random.choice(par.Nshocks,
-            size=(par.simN,par.T),
+            size=(par.T,par.simN),
             p=par.w)
         sim.psi[:,:] = par.psi[I]
         sim.xi[:,:] = par.xi[I]
@@ -350,12 +353,13 @@ class ConsumptionSavingModelClass(ModelClass):
 
         toc = time.time()
 
-        # e. renomarlized
+        # e. renormalized
         sim.P[:,:] = np.exp(sim.p)
         sim.Y[:,:] = np.exp(sim.y)
         sim.M[:,:] = sim.m*sim.P
         sim.C[:,:] = sim.c*sim.P
         sim.A[:,:] = sim.a*sim.P
+        
 
         if do_print:
             print(f'model simulated in {toc-tic:.1f} secs')
