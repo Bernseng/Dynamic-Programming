@@ -40,10 +40,10 @@ def lifecycle(sim,sol,par):
 
             # b. optimal choices and post decision states
 
-            optimal_choice(t,p[t,i],n[t,i],m[t,i],discrete[t,i:],d[t,i:],c[t,i:],a[t,i:],sol,par,mpc[t,i:])
+            optimal_choice(i,t,p[t,i],n[t,i],m[t,i],discrete[t,i:],d[t,i:],c[t,i:],a[t,i:],sol,par,mpc[t,i:])
             
 @njit            
-def optimal_choice(t,p,n,m,discrete,d,c,a,sol,par,mpc):
+def optimal_choice(i,t,p,n,m,discrete,d,c,a,sol,par,mpc):
 
     x = trans.x_plus_func(m,n,par)
     x_mpc = trans.x_plus_func(m+par.mpc_eps,n,par)
@@ -77,6 +77,12 @@ def optimal_choice(t,p,n,m,discrete,d,c,a,sol,par,mpc):
             mpc[0] = (linear_interp.interp_3d(
             par.grid_p,par.grid_n,par.grid_m,sol.c_keep[t],
             p,n,m+par.mpc_eps) - c[0]) / par.mpc_eps
+            # print('t=',t,'i=',i,'\n',
+            #     'adjust->keep',mpc[0],'\n',
+            #     'm+bump - x:',m+par.mpc_eps - x,'\n',
+            #     'consumption diff',linear_interp.interp_3d(
+            #         par.grid_p,par.grid_n,par.grid_m,sol.c_keep[t],
+            #         p,n,m+par.mpc_eps) - c[0])
 
         tot = d[0]+c[0]
         if tot > x: 
@@ -102,7 +108,9 @@ def optimal_choice(t,p,n,m,discrete,d,c,a,sol,par,mpc):
             p,n,m+par.mpc_eps) - c[0]) / par.mpc_eps
         else:
             mpc[0] = (linear_interp.interp_2d(par.grid_p,par.grid_x,sol.c_adj[t],
-                p,x_mpc) - c[0]) / par.mpc_eps        
+                p,x_mpc) - c[0]) / par.mpc_eps   
+            #print('keep->adjust',mpc[0])
+     
 
         if c[0] > m: 
             c[0] = m
