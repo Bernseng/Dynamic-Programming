@@ -53,8 +53,7 @@ class ConsumptionSavingModelClass(ModelClass):
         self.savefolder = 'saved'
         
         # for safe type inference
-        self.not_floats = ['solmethod','T','TR','Nxi','Npsi','Nm','Na',
-                           'simT','simN','Nshocks','sim_seed']
+        self.not_floats = ['solmethod','T','TR','Nxi','Npsi','Nm','Na','simN','Nshocks','sim_seed']
     
     def setup(self):
         """ set baseline parameters """
@@ -100,7 +99,7 @@ class ConsumptionSavingModelClass(ModelClass):
         par.mu_p0 = 0.0
         par.sigma_p0 = 0.2
         par.simN = 10000 # number of persons in simulation
-        par.simT = 80 # number of periods in simulation
+        #par.simT = 80 # number of periods in simulation
         par.sim_seed = 1998
         par.euler_cutoff = 0.02
         
@@ -206,7 +205,7 @@ class ConsumptionSavingModelClass(ModelClass):
         self.allocate()
 
         # c. solve
-        self.solve(do_assert=False)
+        self.solve()
 
         # d. simulate
         self.simulate()
@@ -295,7 +294,7 @@ class ConsumptionSavingModelClass(ModelClass):
         sim.utility = np.zeros(par.simN) # necessary?
         
         # states and choices
-        sim_shape = (par.simN,par.simT)
+        sim_shape = (par.simN,par.T)
         sim.m = np.zeros(sim_shape)
         sim.y = np.zeros(sim_shape)
         sim.p = np.zeros(sim_shape)
@@ -335,7 +334,7 @@ class ConsumptionSavingModelClass(ModelClass):
 
         # shocks
         I = np.random.choice(par.Nshocks,
-            size=(par.simN,par.simT),
+            size=(par.simN,par.T),
             p=par.w)
         sim.psi[:,:] = par.psi[I]
         sim.xi[:,:] = par.xi[I]

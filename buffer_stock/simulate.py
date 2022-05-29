@@ -21,7 +21,7 @@ def life_cycle(par,sol,sim):
 
     # loop over first households and then time
     for i in prange(par.simN):
-        for t in range(par.simT):
+        for t in range(par.T):
             
             # a. solution
             grid_m = sol_m[t,:]
