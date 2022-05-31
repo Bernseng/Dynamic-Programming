@@ -73,7 +73,7 @@ class ConsumptionSavingModelClass(ModelClass):
         par.sigma_xi = 0.1
         par.Npsi = 5
         par.Nxi = 5
-        par.mpc_eps = 0.00855
+        par.mpc_eps = 0.00687
         
         # grids
         par.Nm = 100

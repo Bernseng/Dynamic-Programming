@@ -93,7 +93,7 @@ class DurableConsumptionModelClass(ModelClass):
         par.Nxi = 5
         par.pi = -0.1
         par.mu = 0.5    # probably remove this
-        par.mpc_eps = 0.00755 # because mean_y * 0.75 pct / same ratio as KaplanViolante2022
+        par.mpc_eps = 0.00739 # because mean_y * 0.75 pct / same ratio as KaplanViolante2022
 
         # grids
         par.Np = 50

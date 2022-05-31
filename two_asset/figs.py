@@ -358,7 +358,7 @@ def lifecycle_compare(model1,latex1,model2,latex2,do_euler_errors=False):
     if do_euler_errors:
         simvarlist.append(('euler_error_rel','avg. euler error',None))
 
-    age = np.arange(par.T)+par.Tmin+1
+    age = np.arange(par.T)+par.Tmin
     for i,(simvar,simvarlatex,j) in enumerate(simvarlist):
 
         ax = fig.add_subplot(4,2,i+1)
@@ -421,22 +421,22 @@ def mpc_over_cash_on_hand(model):
 
     for t in range(model.par.T):
         t = int(t)    
-        for m in m_grid:
-            m = int(m)
-            c0[t,m] = linear_interp.interp_3d(
-                    model.par.grid_p,model.par.grid_n,model.par.grid_m,model.sol.c_keep[t],
+        for i,m in enumerate(m_grid):
+            #m_int = int(m)
+            c0[t,i] = linear_interp.interp_3d(
+                    model.par.grid_p,model.par.grid_n,model.par.grid_m,model.sol.c_keep[t],  #.sim.c[t],  
                     p_bar[t],n_bar[t],m)
-            c1[t,m] = linear_interp.interp_3d(
-                    model.par.grid_p,model.par.grid_n,model.par.grid_m,model.sol.c_keep[t],
+            c1[t,i] = linear_interp.interp_3d(
+                    model.par.grid_p,model.par.grid_n,model.par.grid_m,model.sol.c_keep[t],  #sim.c[t], 
                     p_bar[t],n_bar[t],m+model.par.mpc_eps)
-            mpc[t,m] = (c1[t,m]-c0[t,m])/model.par.mpc_eps
+            mpc[t,i] = (c1[t,i]-c0[t,i])/model.par.mpc_eps
 
     plt.figure(figsize=(12,8))
-    for t in np.arange(5,model.par.T,5):
-        plt.plot(model.par.grid_m,mpc[t,:],linestyle='-',marker='o',label='t={}'.format(t+model.par.Tmin))
-    plt.xlim(0,1)
+    for t in np.arange(0,model.par.T,10):
+        plt.plot(model.par.grid_m,np.mean(mpc[t:t+4,:],axis=0),label='t={}-{}'.format(t+model.par.Tmin,t+model.par.Tmin+4))
+    plt.xlim(0,2)
     plt.xlabel('Cash-on-hand, $m_t$')
     plt.ylabel('$\mathcal{MPC}_t$')
-    plt.title('$\mathcal{MPC}$ as a function of cash-on-hand (Keep-problem), for mean $p_t$ and $n_t$', fontweight='bold')
+    plt.title('$\mathcal{MPC}$ as a function of cash-on-hand (Keep-problem)')
     plt.legend()
     plt.show()
