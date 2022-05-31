@@ -5,6 +5,7 @@ import math
 import matplotlib.pyplot as plt
 from matplotlib import cm
 from mpl_toolkits.mplot3d import Axes3D
+from consav.grids import nonlinspace
 import seaborn as sns
 sns.set_style("whitegrid")
 prop_cycle = plt.rcParams["axes.prop_cycle"]
@@ -314,7 +315,7 @@ def lifecycle(model,deciles:bool=False, m_quantiles:bool=False):
                             lw=2)
                         ax.legend(title='Cash-on-hand quantiles',fontsize=8)
                 else:
-                    ax.plot(age,np.mean(simdata,axis=1),lw=2)
+                    ax.plot(age,np.mean(np.maximum(simdata,0.0),axis=1),lw=2)
 
         else:
             ax.plot(age,np.mean(simdata,axis=1),lw=2)
@@ -404,4 +405,37 @@ def lifecycle_compare(model1,latex1,model2,latex2,do_euler_errors=False):
     
         ax.legend()
         
+    plt.show()
+
+def mpc_over_cash_on_hand(model):
+    # plot mpc as a function of cash-on-hand for given t
+    p_bar = np.mean(model.sim.p,axis=1)
+    n_bar = np.mean(model.sim.n,axis=1)
+
+    c0 = np.zeros(shape=(model.par.T, len(model.par.grid_m)))
+    c1 = np.zeros(shape=(model.par.T, len(model.par.grid_m)))
+    mpc = np.zeros(shape=(model.par.T, len(model.par.grid_m)))
+
+    m_grid =  nonlinspace(0,model.par.m_max,model.par.Nm,1.1) # model.par.grid_m
+
+    for t in range(model.par.T):
+        t = int(t)    
+        for m in m_grid:
+            m = int(m)
+            c0[t,m] = linear_interp.interp_3d(
+                    model.par.grid_p,model.par.grid_n,model.par.grid_m,model.sol.c_keep[t],
+                    p_bar[t],n_bar[t],m)
+            c1[t,m] = linear_interp.interp_3d(
+                    model.par.grid_p,model.par.grid_n,model.par.grid_m,model.sol.c_keep[t],
+                    p_bar[t],n_bar[t],m+model.par.mpc_eps)
+            mpc[t,m] = (c1[t,m]-c0[t,m])/model.par.mpc_eps
+
+    plt.figure(figsize=(12,8))
+    for t in np.arange(5,model.par.T,5):
+        plt.plot(model.par.grid_m,mpc[t,:],label='t={}'.format(t))
+    plt.xlim(0,1)
+    plt.xlabel('Cash-on-hand, $m_t$')
+    plt.ylabel('$\mathcal{MPC}_t$')
+    plt.title('$\mathcal{MPC}$ as a function of cash-on-hand (Keep-problem), for mean $p_t$ and $n_t$', fontweight='bold')
+    plt.legend()
     plt.show()

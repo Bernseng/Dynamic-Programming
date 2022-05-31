@@ -62,9 +62,9 @@ class DurableConsumptionModelClass(ModelClass):
         # a. baseline parameters
         
         # horizon and life cycle
-        par.Tmin = 0 # age when entering the model
-        par.T = 35 - par.Tmin # age of death
-        par.Tr = 25 - par.Tmin # retirement age
+        par.Tmin = 25 # age when entering the model
+        par.T = 80 - par.Tmin # age of death
+        par.Tr = 65 - par.Tmin # retirement age
         par.G = 1.02 # growth in permanent income
         par.L = np.ones(par.T-1)
         par.L[0:par.Tr] = np.linspace(1,1/par.G,par.Tr) 
@@ -84,7 +84,7 @@ class DurableConsumptionModelClass(ModelClass):
         par.Rh = par.R + 0.05
         par.Nz = 10 
         par.tau = 0.10
-        par.gamma = 0 # 0.05 
+        par.gamma = 0.05 
         par.delta = 0.15
         par.sigma_psi = 0.1
         par.sigma_xi = 0.1
@@ -93,8 +93,8 @@ class DurableConsumptionModelClass(ModelClass):
         par.Nxi = 5
         par.pi = -0.1
         par.mu = 0.5    # probably remove this
-        par.omega = np.zeros(par.T)
-        
+        par.mpc_eps = 0.00855 # because mean_y * 0.75 pct / same ratio as KaplanViolante2022
+
         # grids
         par.Np = 50
         par.p_min = 1e-4
@@ -109,7 +109,6 @@ class DurableConsumptionModelClass(ModelClass):
         par.a_max = par.m_max+1.0
 
         # simulation
-        par.mpc_eps = 0.00855 # because mean_y * 0.75 pct / same ratio as KaplanViolante2022
         par.sigma_p0 = 0.2
         par.mu_d0 = 0.8
         par.sigma_d0 = 0.2
@@ -158,7 +157,7 @@ class DurableConsumptionModelClass(ModelClass):
         par.grid_a = np.nan + np.zeros((par.Nn,par.Na))
         
         for i_n in range(par.Nn): 
-           par.grid_a[i_n,:] = nonlinspace(-par.omega[0]*par.grid_n[i_n],par.a_max,par.Na,1.1)
+           par.grid_a[i_n,:] = nonlinspace(0,par.a_max,par.Na,1.1)
         
         # c. shocks
 
@@ -403,9 +402,9 @@ class DurableConsumptionModelClass(ModelClass):
         tic = time.time()
 
         # a. random shocks
-        sim.p0[:] = np.random.lognormal(mean=0,sigma=par.sigma_p0,size=par.simN)
-        sim.d0[:] = par.mu_d0*np.random.lognormal(mean=0,sigma=par.sigma_d0,size=par.simN)
-        sim.a0[:] = par.mu_a0*np.random.lognormal(mean=0,sigma=par.sigma_a0,size=par.simN)
+        sim.p0[:] = np.random.lognormal(mean=-0.2,sigma=par.sigma_p0,size=par.simN)
+        sim.d0[:] = par.mu_d0*np.random.lognormal(mean=-0.2,sigma=par.sigma_d0,size=par.simN)
+        sim.a0[:] = par.mu_a0*np.random.lognormal(mean=-0.2,sigma=par.sigma_a0,size=par.simN)
 
         I = np.random.choice(par.Nshocks,
             size=(par.T,par.simN), 
@@ -470,6 +469,9 @@ class DurableConsumptionModelClass(ModelClass):
 
     def lifecycle(self,deciles=False):        
         figs.lifecycle(self,deciles=deciles)
+
+    def mpc_over_cash_on_hand(self):
+        figs.mpc_over_cash_on_hand(self)
 
     ###########
     # analyze #

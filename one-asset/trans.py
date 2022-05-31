@@ -3,7 +3,7 @@ from numba import njit
 
 @njit(fastmath=True)
 def p_plus_func(p,psi,par,t):
-    if t<=par.Tr:
+    if t+1<=par.Tr:
         p_plus = p + np.log(psi) + np.log(par.G) + np.log(par.L[t])
         p_plus = np.fmax(p_plus,par.p_min) #lower bound
         p_plus = np.fmin(p_plus,par.p_max) #upper bound
@@ -15,7 +15,7 @@ def p_plus_func(p,psi,par,t):
 
 @njit(fastmath=True)
 def m_plus_func(a,xi_plus,psi_plus,par,t):
-    if t<=par.Tr:
+    if t+1<=par.Tr:
         m_plus = par.R*a/(psi_plus*par.G*par.L[t]) + xi_plus
     else:
         m_plus = par.R*a/(par.G*par.L[t]) + 1
@@ -23,7 +23,7 @@ def m_plus_func(a,xi_plus,psi_plus,par,t):
 
 @njit(fastmath=True)
 def y_plus_func(p_plus,xi_plus,par,t):
-    if t<=par.Tr:    
+    if t+1<=par.Tr:    
         y_plus = p_plus + np.log(xi_plus)
     else:
         y_plus = p_plus

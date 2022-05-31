@@ -73,7 +73,7 @@ class ConsumptionSavingModelClass(ModelClass):
         
         # preferences
         par.rho = 2.0 # CRRA coeficient
-        par.beta = 0.96 # discount factor
+        par.beta = 0.965 # discount factor
 
         # returns and incomes
         par.R = 1.03
@@ -86,21 +86,20 @@ class ConsumptionSavingModelClass(ModelClass):
         # grids
         par.Nm = 100
         par.m_max = 10
-        par.m_phi = 1.1 #curvature parameter
+        par.m_phi = 1.1 # curvature parameter
         par.Na = 100
         par.a_max = par.m_max+1.0
-        par.a_phi = 1.1 #curvature parameter
+        par.a_phi = 1.1 # curvature parameter
         par.Np = 50
         par.p_min = 1e-4
         par.p_max = 3.0
         
         # simulation
         par.sigma_m0 = 0.2
-        par.mu_m0 = 0.0
-        par.mu_p0 = 0.0
+        par.mu_m0 = -0.2
+        par.mu_p0 = -0.2
         par.sigma_p0 = 0.2
-        par.simN = 10000 # number of persons in simulation
-        #par.simT = 80 # number of periods in simulation
+        par.simN = 5000 # number of persons in simulation
         par.sim_seed = 1998
         par.euler_cutoff = 0.02
         
@@ -350,8 +349,8 @@ class ConsumptionSavingModelClass(ModelClass):
             sol = model.sol
             sim = model.sim
             
-            #simul.life_cycle(par,sol,sim)
             simulate.life_cycle(par,sol,sim)
+            #simulate_old.life_cycle(par,sol,sim)
 
         toc = time.time()
 

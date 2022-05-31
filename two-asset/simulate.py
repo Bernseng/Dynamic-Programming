@@ -108,10 +108,9 @@ def optimal_choice(i,t,p,n,m,discrete,d,c,a,sol,par,mpc):
             p,n,m+par.mpc_eps) - c[0]) / par.mpc_eps
         else:
             mpc[0] = (linear_interp.interp_2d(par.grid_p,par.grid_x,sol.c_adj[t],
-                p,x_mpc) - c[0]) / par.mpc_eps   
+                p,x_mpc) - c[0]) / par.mpc_eps  
             #print('keep->adjust',mpc[0])
      
-
         if c[0] > m: 
             c[0] = m
             a[0] = 0.0
@@ -129,8 +128,6 @@ def euler_errors(sim,sol,par):
         
         discrete_plus = np.zeros(1)
         d_plus = np.zeros(1)
-        d1_plus = np.zeros(1)
-        d2_plus = np.zeros(1)
         c_plus = np.zeros(1)
         a_plus = np.zeros(1)
 
@@ -186,8 +183,5 @@ def calc_utility(sim,sol,par):
     for t in range(par.T):
         for i in prange(par.simN):
             
-            if par.do_2d:
-                u[i] += par.beta**t*utility.func_2d(sim.c[t,i],sim.d1[t,i],sim.d2[t,i],par)
-            else:
-                u[i] += par.beta**t*utility.func(sim.c[t,i],sim.d[t,i],par)
+            u[i] += par.beta**t*utility.func(sim.c[t,i],sim.d[t,i],par)
             
