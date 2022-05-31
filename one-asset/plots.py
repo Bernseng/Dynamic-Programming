@@ -1,4 +1,6 @@
 import numpy as np
+from consav.grids import nonlinspace
+import tools
 import math
 import matplotlib.pyplot as plt
 plt.style.use('seaborn-whitegrid')
@@ -107,4 +109,31 @@ def lifecycle(par, sim,deciles:bool=False):
         if i in [len(simvarlist)-i-1 for i in range(cols)]:
             ax.set_xlabel('age')
 
+    plt.show()
+
+def mpc_over_cash_on_hand(model):
+    # plot mpc as a function of cash-on-hand for given t
+
+    c0 = np.zeros(shape=(model.par.T, len(model.par.grid_m)))
+    c1 = np.zeros(shape=(model.par.T, len(model.par.grid_m)))
+    mpc = np.zeros(shape=(model.par.T, len(model.par.grid_m)))
+
+    m_grid =  nonlinspace(0,model.par.m_max,model.par.Nm,1.1) # model.par.grid_m
+
+    for t in range(model.par.T):
+        t = int(t)    
+        c0[t,:] = tools.interp_linear_1d(m_grid,model.sol.c[t],m_grid[t])
+        c1[t,:] = tools.interp_linear_1d(m_grid,model.sol.c[t],m_grid[t]+model.par.mpc_eps)
+        for m in m_grid:
+            m = int(m)
+            mpc[t,m] = (c1[t,m]-c0[t,m])/model.par.mpc_eps
+
+    plt.figure(figsize=(12,8))
+    for t in np.arange(0,model.par.T,5):
+        plt.plot(model.sol.m[t-model.par.Tmin-1,:],mpc[t,:],linestyle='-',marker='o',label='t={}'.format(t+model.par.Tmin))
+    plt.xlim(0,1)
+    plt.xlabel('Cash-on-hand, $m_t$')
+    plt.ylabel('$\mathcal{MPC}_t$')
+    plt.title('$\mathcal{MPC}$ as a function of cash-on-hand (Keep-problem), for mean $p_t$ and $n_t$', fontweight='bold')
+    plt.legend()
     plt.show()
