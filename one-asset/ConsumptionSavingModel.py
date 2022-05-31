@@ -12,24 +12,16 @@ Solves the Deaton-Carroll buffer-stock consumption model with vfi or egm:
 import time
 import numpy as np
 from numba import njit, prange
-from scipy import optimize
 
 # consav package
 from consav import ModelClass, jit # baseline model class and jit
-from consav import linear_interp # linear interpolation
 from consav.grids import nonlinspace # grids
-from consav.quadrature import log_normal_gauss_hermite # income shocks
-from consav.misc import elapsed
 from quadrature import create_PT_shocks
 
-import figs
 import simulate
-import trans
-import quadrature
-import utility
 import last_period
 import egm
-import simul
+import simulate
 
 ############
 # 2. model #
@@ -147,34 +139,6 @@ class ConsumptionSavingModelClass(ModelClass):
         # d. set seed
         np.random.seed(par.sim_seed)
         
-    """
-        # e. conditions
-        par.FHW = np.float(par.G/par.R)
-        par.AI = np.float((par.R*par.beta)**(1/par.rho))
-        par.GI = np.float(par.AI*np.sum(par.w*par.psi**(-1))/par.G)
-        par.RI = np.float(par.AI/par.R)
-        #par.WRI = np.float(par.pi**(1/par.rho)*par.AI/par.R)
-        par.FVA = np.float(par.beta*np.sum(par.w*(par.G*par.psi)**(1-par.rho)))
-
-        # g. check for existance of solution
-        self.check(do_print=False)
-    
-    def check(self,do_print=True):
-        #check parameters 
-
-        par = self.par
-
-        if do_print:
-            print(f'FHW = {par.FHW:.3f}, AI = {par.AI:.3f}, GI = {par.GI:.3f}, RI = {par.RI:.3f}, WRI = {par.WRI:.3f}, FVA = {par.FVA:.3f}')
-
-        # check for existance of solution
-        if par.sigma_xi == 0 and par.sigma_psi == 0: # no risk
-            if par.GI >= 1 and par.RI >= 1:
-                raise Exception('GI >= 1 and RI >= 1: no solution')
-        else:
-            if par.FVA >= 1 or par.WRI >= 1:
-                raise Exception('FVA >= 1 or WRI >= 1: no solution')
-     """                                
     #########
     # solve #
     #########
@@ -365,21 +329,3 @@ class ConsumptionSavingModelClass(ModelClass):
         if do_print:
             print(f'model simulated in {toc-tic:.1f} secs')
         
-        # euler errors
-    
-    #########
-    # plots #
-    #########
-    """
-    plot_value_function_convergence = figs.plot_value_function_convergence
-    plot_consumption_function_convergence = figs.plot_consumption_function_convergence
-    plot_consumption_function_convergence_age = figs.plot_consumption_function_convergence_age
-    plot_consumption_function_pf = figs.plot_consumption_function_pf
-    plot_buffer_stock_target = figs.plot_buffer_stock_target
-    plot_simulate_cdf_cash_on_hand = figs.plot_simulate_cdf_cash_on_hand
-    plot_simulate_consumption_growth = figs.plot_simulate_consumption_growth
-    plot_life_cycle_income = figs.plot_life_cycle_income
-    plot_life_cycle_cashonhand = figs.plot_life_cycle_cashonhand
-    plot_life_cycle_consumption = figs.plot_life_cycle_consumption
-    plot_life_cycle_assets = figs.plot_life_cycle_assets
-    """

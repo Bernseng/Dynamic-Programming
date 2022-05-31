@@ -76,7 +76,7 @@ class DurableConsumptionModelClass(ModelClass):
         par.rho = 2.0
         par.alpha = 0.9
         par.d_ubar = 1e-2
-        par.theta = 0.8
+        par.phi = 0.8
 
         # returns and income
         par.housing_shock = True

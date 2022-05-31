@@ -1,4 +1,5 @@
 from cProfile import label
+from click import style
 import numpy as np
 import pandas as pd
 import math
@@ -261,7 +262,7 @@ def lifecycle(model,deciles:bool=False, m_quantiles:bool=False):
     rows = math.ceil(len(simvarlist) / cols)
 
     # x-axis labels
-    age = np.arange(par.T)
+    age = np.arange(par.T)+par.Tmin+1
 
     for i,(simvar,simvarlatex) in enumerate(simvarlist):
 
@@ -357,7 +358,7 @@ def lifecycle_compare(model1,latex1,model2,latex2,do_euler_errors=False):
     if do_euler_errors:
         simvarlist.append(('euler_error_rel','avg. euler error',None))
 
-    age = np.arange(par.T)
+    age = np.arange(par.T)+par.Tmin+1
     for i,(simvar,simvarlatex,j) in enumerate(simvarlist):
 
         ax = fig.add_subplot(4,2,i+1)
@@ -432,7 +433,7 @@ def mpc_over_cash_on_hand(model):
 
     plt.figure(figsize=(12,8))
     for t in np.arange(5,model.par.T,5):
-        plt.plot(model.par.grid_m,mpc[t,:],label='t={}'.format(t))
+        plt.plot(model.par.grid_m,mpc[t,:],linestyle='-',marker='o',label='t={}'.format(t+model.par.Tmin))
     plt.xlim(0,1)
     plt.xlabel('Cash-on-hand, $m_t$')
     plt.ylabel('$\mathcal{MPC}_t$')

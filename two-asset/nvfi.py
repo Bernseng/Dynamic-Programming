@@ -13,7 +13,7 @@ import utility
 ########
 
 @njit
-def obj_keep(c,n,m,inv_w,grid_a,d_ubar,alpha,rho,theta):
+def obj_keep(c,n,m,inv_w,grid_a,d_ubar,alpha,rho,phi):
     """ evaluate bellman equation """
 
     # a. end-of-period assets
@@ -23,7 +23,7 @@ def obj_keep(c,n,m,inv_w,grid_a,d_ubar,alpha,rho,theta):
     w = -1.0/linear_interp.interp_1d(grid_a,inv_w,a)
 
     # c. total value
-    value_of_choice = utility.func_nopar(c,n,d_ubar,alpha,rho,theta) + w
+    value_of_choice = utility.func_nopar(c,n,d_ubar,alpha,rho,phi) + w
 
     return -value_of_choice # we are minimizing
 
@@ -43,7 +43,7 @@ def solve_keep(t,sol,par):
     d_ubar = par.d_ubar
     alpha = par.alpha
     rho = par.rho
-    theta = par.theta
+    phi = par.phi
 
     # loop over outer states
     for i_p in prange(par.Np):
@@ -67,16 +67,16 @@ def solve_keep(t,sol,par):
                 # b. optimal choice
                 c_low = np.fmin(m/2,1e-8)
                 c_high = m
-                #c[i_p,i_n,i_m] = golden_section_search.optimizer(obj_keep,c_low,c_high,args=(n,m,inv_w[i_p,i_n],grid_a[i_n,:],d_ubar,alpha,rho,theta),tol=par.tol)
-                c[i_p,i_n,i_m] = golden_section_search.optimizer(obj_keep,c_low,c_high,args=(n,m,inv_w[i_p,i_n],grid_a,d_ubar,alpha,rho,theta),tol=par.tol)
+                #c[i_p,i_n,i_m] = golden_section_search.optimizer(obj_keep,c_low,c_high,args=(n,m,inv_w[i_p,i_n],grid_a[i_n,:],d_ubar,alpha,rho,phi),tol=par.tol)
+                c[i_p,i_n,i_m] = golden_section_search.optimizer(obj_keep,c_low,c_high,args=(n,m,inv_w[i_p,i_n],grid_a,d_ubar,alpha,rho,phi),tol=par.tol)
 
                 # c. optimal value
-                #v = -obj_keep(c[i_p,i_n,i_m],n,m,inv_w[i_p,i_n],grid_a[i_n,:],d_ubar,alpha,rho,theta)
-                v = -obj_keep(c[i_p,i_n,i_m],n,m,inv_w[i_p,i_n],grid_a,d_ubar,alpha,rho,theta)
+                #v = -obj_keep(c[i_p,i_n,i_m],n,m,inv_w[i_p,i_n],grid_a[i_n,:],d_ubar,alpha,rho,phi)
+                v = -obj_keep(c[i_p,i_n,i_m],n,m,inv_w[i_p,i_n],grid_a,d_ubar,alpha,rho,phi)
 
                 inv_v[i_p,i_n,i_m] = -1/v
                 if par.do_marg_u:
-                    inv_marg_u[i_p,i_n,i_m] = 1/utility.marg_func_nopar(c[i_p,i_n,i_m],n,d_ubar,alpha,rho,theta)
+                    inv_marg_u[i_p,i_n,i_m] = 1/utility.marg_func_nopar(c[i_p,i_n,i_m],n,d_ubar,alpha,rho,phi)
 
 #######
 # adj #
@@ -113,7 +113,7 @@ def solve_adj(t,sol,par):
     d_ubar = par.d_ubar
     alpha = par.alpha
     rho = par.rho
-    theta = par.theta
+    phi = par.phi
 
     # loop over outer states
     for i_p in prange(par.Np):
@@ -141,4 +141,4 @@ def solve_adj(t,sol,par):
             c[i_p,i_x] = linear_interp.interp_2d(par.grid_n,par.grid_m,c_keep[i_p],d[i_p,i_x],m)
             inv_v[i_p,i_x] = -obj_adj(d[i_p,i_x],x,inv_v_keep[i_p],grid_n,grid_m)
             if par.do_marg_u:
-                inv_marg_u[i_p,i_x] = 1/utility.marg_func_nopar(c[i_p,i_x],d[i_p,i_x],d_ubar,alpha,rho,theta)
+                inv_marg_u[i_p,i_x] = 1/utility.marg_func_nopar(c[i_p,i_x],d[i_p,i_x],d_ubar,alpha,rho,phi)

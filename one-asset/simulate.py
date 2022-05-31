@@ -1,7 +1,6 @@
 import numpy as np
 from numba import njit,prange
 
-from consav import linear_interp
 import tools
 import trans
 
@@ -38,16 +37,3 @@ def life_cycle(par,sol,sim):
                 y[t+1,i] = trans.y_plus_func(p[t+1,i],sim.xi[t+1,i],par,t)
         
         mpc[t,:] = (tools.interp_linear_1d(grid_m,grid_c,m[t,:]+par.mpc_eps)-c[t,:])/par.mpc_eps
-
-        
-        # if t< par.T-1:
-        #     if t+1 > par.Tr: #after pension
-        #         m[t+1,:] = par.R*a[t,:]/(par.G*par.L[t])+1
-        #         p[t+1,:] = np.log(par.G)+np.log(par.L[t])+p[t,:]
-        #         y[t+1,:] = p[t+1,:]
-        #     else:            #before pension
-        #         m[t+1,:] = par.R*a[t,:]/(par.G*par.L[t]*sim.psi[t+1,:])+sim.xi[t+1,:]
-        #         p[t+1,:] = np.log(par.G)+np.log(par.L[t])+p[t,:]+np.log(sim.psi[t+1,:])
-        #         y[t+1,:] = p[t+1,:]+np.log(sim.xi[t+1,:])
-              
-        
