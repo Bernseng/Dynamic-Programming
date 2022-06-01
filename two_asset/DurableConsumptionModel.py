@@ -81,7 +81,8 @@ class DurableConsumptionModelClass(ModelClass):
         # returns and income
         par.housing_shock = True
         par.R = 1.02
-        par.Rh = par.R + 0.07
+        par.spread = 0.07
+        par.Rh = par.R + par.spread
         par.tau = 0.05
         par.gamma = 0.05 
         par.delta = 0.02
