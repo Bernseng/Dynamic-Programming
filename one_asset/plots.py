@@ -76,7 +76,7 @@ def lifecycle(par, sim,deciles:bool=False):
     rows = math.ceil(len(simvarlist) / cols)
 
     # x-axis labels
-    age = np.arange(par.T)
+    age = np.arange(par.T)+par.Tmin
 
     for i,(simvar,simvarlatex) in enumerate(simvarlist):
 
