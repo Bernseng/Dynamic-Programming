@@ -81,17 +81,17 @@ class DurableConsumptionModelClass(ModelClass):
         # returns and income
         par.housing_shock = True
         par.R = 1.03
-        par.Rh = par.R + 0.05
-        par.Nz = 10 
-        par.tau = 0.10
+        par.Rh = par.R + 0.07
+        par.tau = 0.05
         par.gamma = 0.05 
-        par.delta = 0.15
+        par.delta = 0.02
         par.sigma_psi = 0.1
         par.sigma_xi = 0.1
-        par.sigma_epsilon = 0.02
+        par.sigma_epsilon = 0.0016
+        par.Nz = 5
         par.Npsi = 5
         par.Nxi = 5
-        par.pi = -0.1
+        par.pi = -0.25
         par.mu = 0.5    # probably remove this
         par.mpc_eps = 0.00739 # because mean_y * 0.75 pct / same ratio as KaplanViolante2022
 
@@ -99,8 +99,8 @@ class DurableConsumptionModelClass(ModelClass):
         par.Np = 50
         par.p_min = 1e-4
         par.p_max = 3.0
-        par.Nn = 50
-        par.n_max = 3.0
+        par.Nn = 100
+        par.n_max = 8.0 
         par.Nm = 100
         par.m_max = 10.0    
         par.Nx = 100

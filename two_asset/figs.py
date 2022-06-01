@@ -294,9 +294,9 @@ def lifecycle(model,deciles:bool=False, m_quantiles:bool=False):
         # plot
         if deciles:
             if simvar not in ['discrete','mpc']:
-                series = np.percentile(simdata, np.arange(0, 100, 10),axis=1)
+                series = np.percentile(simdata, np.arange(0, 100, 25),axis=1)
                 ax.plot(age, series.T,lw=2)
-                if i == 0: ax.legend(np.arange(0, 100, 10),title='Deciles',fontsize=8)
+                if i == 0: ax.legend(np.arange(0, 100, 25),title='Quantiles',fontsize=8)
             else:
                 if m_quantiles:
                     if simvar not in ['mpc']:
@@ -432,9 +432,12 @@ def mpc_over_cash_on_hand(model):
             mpc[t,i] = (c1[t,i]-c0[t,i])/model.par.mpc_eps
 
     plt.figure(figsize=(12,8))
-    for t in np.arange(0,model.par.T,10):
-        plt.plot(model.par.grid_m,np.mean(mpc[t:t+4,:],axis=0),label='t={}-{}'.format(t+model.par.Tmin,t+model.par.Tmin+4))
-    plt.xlim(0,2)
+    for t in np.arange(5,model.par.T-10,10):
+       plt.plot(model.par.grid_m,np.mean(mpc[t:t+9,:],axis=0),label='t={}-{}'.format(t+model.par.Tmin,t+model.par.Tmin+9))
+    # for t in np.arange(0,model.par.T,10):
+    #     plt.plot(model.par.grid_m,mpc[t,:],label='t={}'.format(t+model.par.Tmin))
+    
+    plt.xlim(0,5)
     plt.xlabel('Cash-on-hand, $m_t$')
     plt.ylabel('$\mathcal{MPC}_t$')
     plt.title('$\mathcal{MPC}$ as a function of cash-on-hand (Keep-problem)')
