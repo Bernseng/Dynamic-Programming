@@ -121,12 +121,6 @@ def mpc_over_cash_on_hand(par,sol,sim):
 
     for t in range(par.T):
         t = int(t)    
-        #print(tools.interp_linear_1d(m_grid,sol.c[t,:],sol.m[t,:]).shape)
-        #print(c0[t,:].shape)
-        #print(m_grid.shape)
-        #print(sol.m[t,:].shape)
-        #print('m',sol.m[t,:])
-        #print('m-bump',sol.m[t,:]+par.mpc_eps)
 
         c0[t,:] = tools.interp_linear_1d(sol.m[t,:],
                                         sol.c[t,:],#*np.exp(sim.p[t,:]),
@@ -137,19 +131,14 @@ def mpc_over_cash_on_hand(par,sol,sim):
                                         sol.c[t,:],#*np.exp(sim.p[t,:]),
                                         bump+m_grid,#*np.exp(sim.p[t,:])
                                         )
-        #c0[t,:] = tools.interp_linear_1d(par.grid_m,sol.c[t,:],m_grid[:])
-        #c1[t,:] = tools.interp_linear_1d(par.grid_m,sol.c[t,:],m_grid[:]+par.mpc_eps)
-        
+
         for i,m in enumerate(m_grid):
             if i == 0: continue
             mpc[t,i] = (c1[t,i]-c0[t,i])/bump
-            #print(np.mean(sim.P,axis=1).shape)
-            #mpc[:,i] = mpc[:,i]
     
     plt.figure(figsize=(12,8))
-    for t in np.arange(0,par.T,10):
-        #rint(np.mean(mpc[t:t+4,1:],axis=0))
-        plt.plot(m_grid[1:],np.mean(mpc[t:t+4,1:],axis=0),label='t={}-{}'.format(t+par.Tmin,t+par.Tmin+4))
+    for t in np.arange(0,par.T-10,10):
+        plt.plot(m_grid[1:],np.mean(mpc[t:t+9,1:],axis=0),label='t={}-{}'.format(t+par.Tmin,t+par.Tmin+9))
     plt.xlim(0,3)
     plt.xlabel('Cash-on-hand, $m_t$')
     plt.ylabel('$\mathcal{MPC}_t$')
