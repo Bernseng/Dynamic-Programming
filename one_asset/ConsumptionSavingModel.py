@@ -319,8 +319,8 @@ class ConsumptionSavingModelClass(ModelClass):
         toc = time.time()
 
         # e. renormalized
-        sim.P[:,:] = np.exp(sim.p)
-        sim.Y[:,:] = np.exp(sim.y)
+        sim.P[:,:] = sim.y #np.exp(sim.p)
+        sim.Y[:,:] = sim.p #np.exp(sim.y)
         sim.M[:,:] = sim.m*sim.P
         sim.C[:,:] = sim.c*sim.P
         sim.A[:,:] = sim.a*sim.P

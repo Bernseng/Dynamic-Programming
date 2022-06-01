@@ -68,7 +68,7 @@ def lifecycle(par, sim,deciles:bool=False):
                   ('M','$M_t$'),
                   ('C','$C_t$'),
                   ('A','$A_t$'),
-                  ('mpc','$\mathcal{MPC}_t$'),                  
+                  #('mpc','$\mathcal{MPC}_t$'),                  
                   ]
 
     # determine number of rows in figure, given the number of columns
@@ -87,9 +87,9 @@ def lifecycle(par, sim,deciles:bool=False):
         # plot
         if deciles:
             if simvar not in ['discrete','mpc']:
-                series = np.percentile(simdata, np.arange(0, 100, 10),axis=1)
+                series = np.percentile(simdata, np.arange(0, 100, 25),axis=1)
                 ax.plot(age, series.T,lw=2)
-                if i == 0: ax.legend(np.arange(0, 100, 10),title='Deciles',fontsize=8)
+                if i == 0: ax.legend(np.arange(0, 100, 25),title='Quantiles',fontsize=8)
             else:
                 ax.plot(age,np.mean(simdata,axis=1),lw=2)
         else:
