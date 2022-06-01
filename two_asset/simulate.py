@@ -70,20 +70,20 @@ def optimal_choice(i,t,p,n,m,discrete,d,c,a,sol,par,mpc):
             par.grid_p,par.grid_x,sol.c_adj[t],
             p,x)
 
-        if adjust==adjust_mpc:
-            mpc[0] = (linear_interp.interp_2d(par.grid_p,par.grid_x,sol.c_adj[t],
-                p,x_mpc) - c[0]) / par.mpc_eps
-        else:
-            mpc[0] = (linear_interp.interp_3d(
-            par.grid_p,par.grid_n,par.grid_m,sol.c_keep[t],
-            p,n,m+par.mpc_eps) - c[0]) / par.mpc_eps
+        #if adjust==adjust_mpc:
+        mpc[0] = (linear_interp.interp_2d(par.grid_p,par.grid_x,sol.c_adj[t],
+            p,x_mpc) - c[0]) / par.mpc_eps
+        # else:
+        #     mpc[0] = (linear_interp.interp_3d(
+        #     par.grid_p,par.grid_n,par.grid_m,sol.c_keep[t],
+        #     p,n,m+par.mpc_eps) - c[0]) / par.mpc_eps
         #if adjust != adjust_mpc:
-            print('t=',t,'i=',i,'\n',
-                'adjust->keep',mpc[0],'\n',
-                'm+bump - x:',m+par.mpc_eps - x,'\n',
-                'consumption diff',linear_interp.interp_3d(
-                    par.grid_p,par.grid_n,par.grid_m,sol.c_keep[t],
-                    p,n,m+par.mpc_eps) - c[0])
+            # print('t=',t,'i=',i,'\n',
+            #     'adjust->keep',mpc[0],'\n',
+            #     'm+bump - x:',m+par.mpc_eps - x,'\n',
+            #     'consumption diff',linear_interp.interp_3d(
+            #         par.grid_p,par.grid_n,par.grid_m,sol.c_keep[t],
+            #         p,n,m+par.mpc_eps) - c[0])
 
         tot = d[0]+c[0]
         if tot > x: 
@@ -103,15 +103,15 @@ def optimal_choice(i,t,p,n,m,discrete,d,c,a,sol,par,mpc):
             par.grid_p,par.grid_n,par.grid_m,sol.c_keep[t],
             p,n,m)
 
-        if adjust==adjust_mpc:
-            mpc[0] = (linear_interp.interp_3d(
-                par.grid_p,par.grid_n,par.grid_m,sol.c_keep[t],
-                p,n,m+par.mpc_eps) - c[0]) / par.mpc_eps
-        else:
-        #if adjust != adjust_mpc:
-            mpc[0] = (linear_interp.interp_2d(par.grid_p,par.grid_x,sol.c_adj[t],
-                p,x_mpc) - c[0]) / par.mpc_eps  
-            print('keep->adjust',mpc[0])
+        #if adjust==adjust_mpc:
+        mpc[0] = (linear_interp.interp_3d(
+            par.grid_p,par.grid_n,par.grid_m,sol.c_keep[t],
+            p,n,m+par.mpc_eps) - c[0]) / par.mpc_eps
+        # else:
+        # #if adjust != adjust_mpc:
+        #     mpc[0] = (linear_interp.interp_2d(par.grid_p,par.grid_x,sol.c_adj[t],
+        #         p,x_mpc) - c[0]) / par.mpc_eps  
+        #     print('keep->adjust',mpc[0])
      
         if c[0] > m: 
             c[0] = m

@@ -62,9 +62,9 @@ class DurableConsumptionModelClass(ModelClass):
         # a. baseline parameters
         
         # horizon and life cycle
-        par.Tmin = 25 # age when entering the model
-        par.T = 80 - par.Tmin # age of death
-        par.Tr = 65 - par.Tmin # retirement age
+        par.Tmin = 0 # age when entering the model
+        par.T = 30 - par.Tmin # age of death
+        par.Tr = 20 - par.Tmin # retirement age
         par.G = 1.02 # growth in permanent income
         par.L = np.ones(par.T-1)
         par.L[0:par.Tr] = np.linspace(1,1/par.G,par.Tr) 
@@ -80,7 +80,7 @@ class DurableConsumptionModelClass(ModelClass):
 
         # returns and income
         par.housing_shock = True
-        par.R = 1.03
+        par.R = 1.02
         par.Rh = par.R + 0.07
         par.tau = 0.05
         par.gamma = 0.05 
@@ -100,12 +100,12 @@ class DurableConsumptionModelClass(ModelClass):
         par.p_min = 1e-4
         par.p_max = 3.0
         par.Nn = 100
-        par.n_max = 8.0 
-        par.Nm = 100
+        par.n_max = 5.0
+        par.Nm = 75
         par.m_max = 10.0    
         par.Nx = 100
         par.x_max = par.m_max + par.n_max
-        par.Na = 100
+        par.Na = 125
         par.a_max = par.m_max+1.0
 
         # simulation
@@ -118,7 +118,7 @@ class DurableConsumptionModelClass(ModelClass):
         par.sim_seed = 1998
         par.euler_cutoff = 0.02
         par.moments_noise = 0.1
-        par.moments_minage = 10
+        par.moments_minage = 0
         par.moments_maxage = 30
         par.moments_numsim = 1
 

@@ -432,7 +432,7 @@ def mpc_over_cash_on_hand(model):
             mpc[t,i] = (c1[t,i]-c0[t,i])/model.par.mpc_eps
 
     plt.figure(figsize=(12,8))
-    for t in np.arange(5,model.par.T-10,10):
+    for t in np.arange(5,model.par.T,10):
        plt.plot(model.par.grid_m,np.mean(mpc[t:t+9,:],axis=0),label='t={}-{}'.format(t+model.par.Tmin,t+model.par.Tmin+9))
     # for t in np.arange(0,model.par.T,10):
     #     plt.plot(model.par.grid_m,mpc[t,:],label='t={}'.format(t+model.par.Tmin))
