@@ -11,7 +11,6 @@ Solves the Deaton-Carroll buffer-stock consumption model with vfi or egm:
 
 import time
 import numpy as np
-from numba import njit
 
 # consav package
 from consav import ModelClass, jit # baseline model class and jit
@@ -65,26 +64,26 @@ class OneAssetModelClass(ModelClass):
         
         # preferences
         par.rho = 2.0 # CRRA coeficient
-        par.beta = 0.965 # discount factor
+        par.beta = 0.965 # subjective discount factor
 
         # returns and incomes
         par.R = 1.03 #return on assets
-        par.sigma_psi = 0.1 
-        par.sigma_xi = 0.1
+        par.sigma_psi = 0.1 # stdev of shocks to permanent income
+        par.sigma_xi = 0.1 # stdev of shocks to permanent income
         par.Npsi = 5 #nodes for psi shock
         par.Nxi = 5 #nodes for xi shock
         par.mpc_eps = 0.00749 #bump to m for mpc calculation
         
         # grids
         par.Nm = 100 #nodes for m grid
-        par.m_max = 10
+        par.m_max = 10 #maximum cash-on-hand level
         par.m_phi = 1.1 # curvature parameter
         par.Na = 100 #nodes for a grid
         par.a_max = par.m_max+1.0
         par.a_phi = 1.1 # curvature parameter
         par.Np = 50 #nodes for p grid
-        par.p_min = 1e-4
-        par.p_max = 3.0
+        par.p_min = 1e-4 #minimum permanent income
+        par.p_max = 3.0 #maximum permanent income
         
         # simulation
         par.sigma_m0 = 0.2 #std for initial draw of m
@@ -92,8 +91,8 @@ class OneAssetModelClass(ModelClass):
         par.mu_p0 = -0.2 #mean for initial draw of p
         par.sigma_p0 = 0.2 #std for initial draw of p
         par.simN = 10000 # number of persons in simulation
-        par.sim_seed = 1998
-        par.euler_cutoff = 0.02
+        par.sim_seed = 1998 # seed for simulation
+        par.euler_cutoff = 0.02 # euler error cutoff
         
         # misc
         par.t = 0

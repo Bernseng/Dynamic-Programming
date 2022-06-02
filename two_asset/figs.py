@@ -295,7 +295,7 @@ def lifecycle(model,quantiles:bool=False):
         ax.grid(True)
         if i in [len(simvarlist)-i-1 for i in range(cols)]:
             ax.set_xlabel('age')
-
+    plt.savefig('output/life_cycle.png')
     plt.show()
 
 def lifecycle_compare(model1,latex1,model2,latex2,do_euler_errors=False):
@@ -387,4 +387,5 @@ def mpc_over_cash_on_hand(model):
     plt.ylabel('$\mathcal{MPC}_t$')
     plt.title('$\mathcal{MPC}$ as a function of cash-on-hand (Keep-problem)')
     plt.legend()
+    plt.savefig('output/mpc_over_wealth_twoasset.png')
     plt.show()
