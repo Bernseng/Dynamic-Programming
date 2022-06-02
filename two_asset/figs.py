@@ -113,3 +113,19 @@ def mpc_over_cash_on_hand(model):
     plt.legend(fontsize=15)
     plt.savefig('output/mpc_over_wealth_twoasset.png')
     plt.show()
+
+def mpc_over_lifecycle(model):
+
+    # x-axis labels
+    age = np.arange(model.par.T)+model.par.Tmin
+
+    plt.plot(age,np.mean(model.sim.mpc,axis=1),lw=2)
+
+    #setting labels and fontsize
+    plt.xlabel('Age',fontsize=13)
+    plt.ylabel('$\mathcal{MPC}_{t}$',fontsize=13)
+    plt.xticks(fontsize=13)
+    plt.yticks(fontsize=13)
+    plt.tight_layout()
+    plt.savefig('output/mpc_lifecycle_twoasset.png')
+    plt.show()
