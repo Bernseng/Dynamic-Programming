@@ -234,11 +234,11 @@ def _egm(model,t,i_p,i_n):
 # lifecycle #
 #############
 
-def lifecycle(model,deciles:bool=False, m_quantiles:bool=False):
+def lifecycle(model,quantiles:bool=False):
     '''
     Plot the lifecycle of the model.
     Keyword arguments:
-    deciles -- if True, plot deciles instead of mean + quantiles
+    quantiles -- if True, plot quantiles instead of mean + quantiles
     '''
     # a. unpack
     par = model.par
@@ -262,7 +262,7 @@ def lifecycle(model,deciles:bool=False, m_quantiles:bool=False):
     rows = math.ceil(len(simvarlist) / cols)
 
     # x-axis labels
-    age = np.arange(par.T)+par.Tmin+1
+    age = np.arange(par.T)+par.Tmin
 
     for i,(simvar,simvarlatex) in enumerate(simvarlist):
 
@@ -270,53 +270,14 @@ def lifecycle(model,deciles:bool=False, m_quantiles:bool=False):
 
         simdata = getattr(sim,simvar)[:par.T,:]
         
-        if m_quantiles:
-            if simvar == 'm':
-                index25 = [
-                pd.Series(simdata[t,:])[
-                pd.Series(simdata[t,:]).index[
-                pd.Series(simdata[t,:]).rank(method="max", pct=True)<=0.25]].idxmax()
-                for t in age
-                ]
-                index50 = [
-                pd.Series(simdata[t,:])[
-                pd.Series(simdata[t,:]).index[
-                pd.Series(simdata[t,:]).rank(method="max", pct=True)<=0.5]].idxmax()
-                for t in age
-                ]
-                index75 = [
-                pd.Series(simdata[t,:])[
-                pd.Series(simdata[t,:]).index[
-                pd.Series(simdata[t,:]).rank(method="max", pct=True)<=0.75]].idxmax()
-                for t in age
-                ]
-
         # plot
-        if deciles:
+        if quantiles:
             if simvar not in ['discrete','mpc']:
                 series = np.percentile(simdata, np.arange(0, 100, 25),axis=1)
                 ax.plot(age, series.T,lw=2)
                 if i == 0: ax.legend(np.arange(0, 100, 25),title='Quantiles',fontsize=8)
             else:
-                if m_quantiles:
-                    if simvar not in ['mpc']:
-                        ax.plot(age,np.mean(simdata,axis=1),lw=2)
-                    else:
-                        ax.plot(age,
-                            np.array([simdata[t,i] for t,i in zip(age,index25)]),
-                            label='25%',
-                            lw=2)
-                        ax.plot(age,
-                            np.array([simdata[t,i] for t,i in zip(age,index50)]),
-                            label='50%',
-                            lw=2)
-                        ax.plot(age,
-                            np.array([simdata[t,i] for t,i in zip(age,index75)]),
-                            label='75%',
-                            lw=2)
-                        ax.legend(title='Cash-on-hand quantiles',fontsize=8)
-                else:
-                    ax.plot(age,np.mean(np.maximum(simdata,0.0),axis=1),lw=2)
+                ax.plot(age,np.mean(np.maximum(simdata,0.0),axis=1),lw=2)
 
         else:
             ax.plot(age,np.mean(simdata,axis=1),lw=2)
@@ -371,25 +332,12 @@ def lifecycle_compare(model1,latex1,model2,latex2,do_euler_errors=False):
             simdata = getattr(sim2,simvar)[:par.T-1,:]
             ax.plot(age[:-1],np.nanmean(simdata,axis=1),lw=2,label=latex2)
 
-        # elif par.do_2d and simvar == 'discrete':
-
-        #     simdata = getattr(sim1,simvar)[:par.T,:]
-        #     ax.plot(age,np.mean(simdata == j,axis=1),lw=2,label=latex1)
-
-        #     simdata = getattr(sim2,simvar)[:par.T,:]
-        #     ax.plot(age,np.mean(simdata == j,axis=1),lw=2,label=latex2)
-
         else:
-
+            
             simdata = getattr(sim1,simvar)[:par.T,:]
             ax.plot(age,np.mean(simdata,axis=1),lw=2,label=latex1)
-            # print(f"age: {age}")
-            # print(f"age.size: {age.size}")
-            # print(f"simdata_mean shape {np.mean(simdata,axis=1)}")
+            
             simdata = getattr(sim2,simvar)[:par.T,:]
-            # print(f"simdata_mean shape {np.mean(simdata,axis=1)}")
-
-            # raise
             ax.plot(age,np.mean(simdata,axis=1),lw=2,label=latex2)
 
         ax.set_title(simvarlatex)
@@ -409,7 +357,7 @@ def lifecycle_compare(model1,latex1,model2,latex2,do_euler_errors=False):
     plt.show()
 
 def mpc_over_cash_on_hand(model):
-    # plot mpc as a function of cash-on-hand for given t
+    '''plot mpc as a function of cash-on-hand for given t'''
     p_bar = np.mean(model.sim.p,axis=1)
     n_bar = np.mean(model.sim.n,axis=1)
 
@@ -417,26 +365,23 @@ def mpc_over_cash_on_hand(model):
     c1 = np.zeros(shape=(model.par.T, len(model.par.grid_m)))
     mpc = np.zeros(shape=(model.par.T, len(model.par.grid_m)))
 
-    m_grid =  nonlinspace(0,model.par.m_max,model.par.Nm,1.1) # model.par.grid_m
+    m_grid =  nonlinspace(0,model.par.m_max,model.par.Nm,1.1) 
 
     for t in range(model.par.T):
         t = int(t)    
         for i,m in enumerate(m_grid):
-            #m_int = int(m)
             c0[t,i] = linear_interp.interp_3d(
-                    model.par.grid_p,model.par.grid_n,model.par.grid_m,model.sol.c_keep[t],  #.sim.c[t],  
+                    model.par.grid_p,model.par.grid_n,model.par.grid_m,model.sol.c_keep[t],
                     p_bar[t],n_bar[t],m)
             c1[t,i] = linear_interp.interp_3d(
-                    model.par.grid_p,model.par.grid_n,model.par.grid_m,model.sol.c_keep[t],  #sim.c[t], 
+                    model.par.grid_p,model.par.grid_n,model.par.grid_m,model.sol.c_keep[t],  
                     p_bar[t],n_bar[t],m+model.par.mpc_eps)
             mpc[t,i] = (c1[t,i]-c0[t,i])/model.par.mpc_eps
 
     plt.figure(figsize=(12,8))
     for t in np.arange(5,model.par.T,10):
        plt.plot(model.par.grid_m,np.mean(mpc[t:t+9,:],axis=0),label='t={}-{}'.format(t+model.par.Tmin,t+model.par.Tmin+9))
-    # for t in np.arange(0,model.par.T,10):
-    #     plt.plot(model.par.grid_m,mpc[t,:],label='t={}'.format(t+model.par.Tmin))
-    
+
     plt.xlim(0,5)
     plt.xlabel('Cash-on-hand, $m_t$')
     plt.ylabel('$\mathcal{MPC}_t$')

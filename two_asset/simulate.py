@@ -34,7 +34,7 @@ def lifecycle(sim,sol,par):
             else:
                 p[t,i] = trans.p_plus_func(p[t-1,i],sim.psi[t,i],par,t-1)
                 n[t,i] = trans.n_plus_func(d[t-1,i],par,sim.z[t])
-                m[t,i] = trans.m_plus_func(a[t-1,i],p[t,i],sim.xi[t,i],par)
+                m[t,i] = trans.m_plus_func(a[t-1,i],p[t,i],sim.xi[t,i],par,t)
             
             y[t,i] = p[t,i] * sim.xi[t,i]
 
@@ -70,13 +70,13 @@ def optimal_choice(i,t,p,n,m,discrete,d,c,a,sol,par,mpc):
             par.grid_p,par.grid_x,sol.c_adj[t],
             p,x)
 
-        #if adjust==adjust_mpc:
-        mpc[0] = (linear_interp.interp_2d(par.grid_p,par.grid_x,sol.c_adj[t],
-            p,x_mpc) - c[0]) / par.mpc_eps
-        # else:
-        #     mpc[0] = (linear_interp.interp_3d(
-        #     par.grid_p,par.grid_n,par.grid_m,sol.c_keep[t],
-        #     p,n,m+par.mpc_eps) - c[0]) / par.mpc_eps
+        if adjust==adjust_mpc:
+            mpc[0] = (linear_interp.interp_2d(par.grid_p,par.grid_x,sol.c_adj[t],
+                p,x_mpc) - c[0]) / par.mpc_eps
+        else:
+            mpc[0] = (linear_interp.interp_3d(
+            par.grid_p,par.grid_n,par.grid_m,sol.c_keep[t],
+            p,n,m+par.mpc_eps) - c[0]) / par.mpc_eps
         #if adjust != adjust_mpc:
             # print('t=',t,'i=',i,'\n',
             #     'adjust->keep',mpc[0],'\n',
@@ -103,15 +103,15 @@ def optimal_choice(i,t,p,n,m,discrete,d,c,a,sol,par,mpc):
             par.grid_p,par.grid_n,par.grid_m,sol.c_keep[t],
             p,n,m)
 
-        #if adjust==adjust_mpc:
-        mpc[0] = (linear_interp.interp_3d(
-            par.grid_p,par.grid_n,par.grid_m,sol.c_keep[t],
-            p,n,m+par.mpc_eps) - c[0]) / par.mpc_eps
-        # else:
-        # #if adjust != adjust_mpc:
-        #     mpc[0] = (linear_interp.interp_2d(par.grid_p,par.grid_x,sol.c_adj[t],
-        #         p,x_mpc) - c[0]) / par.mpc_eps  
-        #     print('keep->adjust',mpc[0])
+        if adjust==adjust_mpc:
+            mpc[0] = (linear_interp.interp_3d(
+                par.grid_p,par.grid_n,par.grid_m,sol.c_keep[t],
+                p,n,m+par.mpc_eps) - c[0]) / par.mpc_eps
+        else:
+        #if adjust != adjust_mpc:
+            mpc[0] = (linear_interp.interp_2d(par.grid_p,par.grid_x,sol.c_adj[t],
+                p,x_mpc) - c[0]) / par.mpc_eps  
+            #print('keep->adjust',mpc[0])
      
         if c[0] > m: 
             c[0] = m
@@ -157,7 +157,7 @@ def euler_errors(sim,sol,par):
                     # ii. next-period states
                     p_plus = trans.p_plus_func(sim.p[t,i],psi,par)
                     n_plus = trans.n_plus_func(sim.d[t,i],par)
-                    m_plus = trans.m_plus_func(sim.a[t,i],p_plus,xi,par)
+                    m_plus = trans.m_plus_func(sim.a[t,i],p_plus,xi,par,t)
 
                     # iii. weight
                     weight = psi_w*xi_w

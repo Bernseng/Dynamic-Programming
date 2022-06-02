@@ -142,6 +142,6 @@ def mpc_over_cash_on_hand(par,sol,sim):
     plt.xlim(0,3)
     plt.xlabel('Cash-on-hand, $m_t$')
     plt.ylabel('$\mathcal{MPC}_t$')
-    plt.title('$\mathcal{MPC}$ as a function of cash-on-hand', fontweight='bold')
+    plt.title('$\mathcal{MPC}$ as a function of cash-on-hand')
     plt.legend()
     plt.show()

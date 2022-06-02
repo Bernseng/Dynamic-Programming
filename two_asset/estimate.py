@@ -54,13 +54,9 @@ def calc_moments(par,data):
     noise_a = data.a + np.random.normal(0,par.moments_noise,size=data.a.shape)  # introduce noise to the data on top of new realizations of shocks
     noise_y = data.y + np.random.normal(0,par.moments_noise,size=data.y.shape)  # introduce noise to the data on top of new realizations of shocks
     
-    return np.array([np.mean(noise_a,1),np.mean(noise_y,1)])
-
     #return np.array([np.mean(noise_a[agegrid,:],1),np.mean(noise_y[agegrid,:],1)])
-    #print(np.array([np.mean(noise_a[agegrid,:]),np.mean(noise_y[agegrid,:])]))
-    #return np.array([np.mean(noise_a[agegrid,:]),np.mean(noise_y[agegrid,:])])
-
-    #return np.mean(noise_a[agegrid,:],1)
+    return np.array([np.mean(noise_a,1),np.mean(noise_y,1)]) # both a and y
+    #return np.mean(noise_a[agegrid,:],1) # only a
 
 def method_simulated_moments(model,est_par,theta0,data):
 
@@ -69,15 +65,14 @@ def method_simulated_moments(model,est_par,theta0,data):
     
     # Calculate data moments
     data.moments = calc_moments(model.par,data)
-    #print('Data moments: ',data.moments)
-    #print('Data moments shape: ',data.moments.shape)
+
     # Estimate
     obj_fun = lambda x: sum_squared_diff_moments(x,model,est_par,data)
     res = optimize.minimize(obj_fun,theta0, method='BFGS')
 
     return res
 
-def sum_squared_diff_moments(theta0,model,est_par,data):
+def sum_squared_diff_moments(theta0,model,est_par,data,scale=1):
 
     par = model.par
     #Update parameters
@@ -88,9 +83,8 @@ def sum_squared_diff_moments(theta0,model,est_par,data):
     model.solve()
 
     # Simulate the momemnts
-    #moments = np.nan + np.zeros((data.moments.size,par.moments_numsim))
-    moments = np.nan + np.zeros((data.moments.shape[0],data.moments.shape[1],par.moments_numsim))
-    #moments = np.nan + np.zeros((2,par.moments_numsim))
+    #moments = np.nan + np.zeros((data.moments.size,par.moments_numsim)) # both a
+    moments = np.nan + np.zeros((data.moments.shape[0],data.moments.shape[1],par.moments_numsim)) # both a and y
 
     for s in range(par.moments_numsim):
 
@@ -98,15 +92,12 @@ def sum_squared_diff_moments(theta0,model,est_par,data):
         model.simulate()
 
         # Calculate moments
-        #moments[:,s] = calc_moments(par,model.sim)
-        moments[:,:,s] = calc_moments(par,model.sim)
-        #print('Simulated moments: ',moments[:,s])
-        #print('Simulated moments shape: ',moments[:,s].shape)
+        #moments[:,s] = calc_moments(par,model.sim)    # only a
+        moments[:,:,s] = calc_moments(par,model.sim) * scale  # both a and y
 
     # Mean of moments         
-    #moments = np.mean(moments,1)
-    moments = np.mean(moments,axis=2)
-    print('Mean of moments: ',moments)
+    #moments = np.mean(moments,1)    # only a
+    moments = np.mean(moments,axis=2)   # both a and y
 
     # Objective function
     if hasattr(par, 'weight_mat'):

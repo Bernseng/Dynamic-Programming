@@ -4,7 +4,7 @@ from numba import njit,prange
 import tools
 import trans
 
-#@njit(parallel=True)
+@njit(parallel=True)
 def life_cycle(par,sol,sim):
     
     # unpack 

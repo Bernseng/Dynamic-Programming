@@ -4,11 +4,11 @@ from numba import njit
 @njit(fastmath=True)
 def p_plus_func(p,psi,par,t):
     if t+1<par.Tr:
-        p_plus = p*psi*par.G*par.L[t]#p + np.log(psi) + np.log(par.G) + np.log(par.L[t])
+        p_plus = p*psi*par.G*par.L[t] 
         p_plus = np.fmax(p_plus,par.p_min) #lower bound
         p_plus = np.fmin(p_plus,par.p_max) #upper bound
     else:
-        p_plus = p*par.G*par.L[t]#p + np.log(par.G) + np.log(par.L[t]) #no shocks to permanent income
+        p_plus = p*par.G*par.L[t] #no shocks to permanent income
         p_plus = np.fmax(p_plus,par.p_min) #lower bound
         p_plus = np.fmin(p_plus,par.p_max) #upper bound
     return p_plus 
@@ -24,23 +24,7 @@ def m_plus_func(a,xi_plus,psi_plus,par,t):
 @njit(fastmath=True)
 def y_plus_func(p_plus,xi_plus,par,t):
     if t+1<par.Tr:    
-        y_plus = p_plus*xi_plus#p_plus + np.log(xi_plus)
+        y_plus = p_plus*xi_plus
     else:
-        y_plus = p_plus
+        y_plus = p_plus #no shocks to transitory income
     return y_plus
-
-'''
-if t < par.simT-1:
-
-                if t+1 > par.TR-1:
-                    m[i,t+1] = par.R*a[i,t] / (par.G*par.L[t]) +  1
-                    p[i,t+1] = np.log(par.G) + np.log(par.L[t]) + p[i,t]
-                    y[i,t+1] = p[i,t+1]
-                else:
-                    m[i,t+1] = par.R*a[i,t] / (par.G*par.L[t]*sim.psi[i,t+1]) + sim.xi[i,t+1]
-                    p[i,t+1] = np.log(par.G) + np.log(par.L[t]) + p[i,t] + np.log(sim.psi[i,t+1])   
-                    if sim.xi[i,t+1] > 0:
-                        y[i,t+1] = p[i,t+1] + np.log(sim.xi[i,t+1])
-                    else:
-                        y[i,t+1] = -np.inf
-'''

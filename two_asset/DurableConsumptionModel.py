@@ -3,9 +3,9 @@
 
 Solves a consumption-saving model with a durable consumption good and non-convex adjustment costs with either:
 
-A. vfi: value function iteration (only i C++)
-B. nvfi: nested value function iteration (both in Python and C++)
-C. negm: nested endogenous grid point method (both in Python and C++)
+A. vfi: value function iteration 
+B. nvfi: nested value function iteration
+C. negm: nested endogenous grid point method
 
 """
 
@@ -19,8 +19,9 @@ import numpy as np
 # consav package
 from consav import ModelClass, jit # baseline model class and jit
 
-from consav.grids import nonlinspace # grids
-from quadrature import create_PT_shocks, normal_gauss_hermite # income shocks
+from consav.grids import nonlinspace
+from torch import quantile # grids
+from quadrature import create_PT_shocks # income shocks
 
 # local modules
 import last_period
@@ -62,90 +63,88 @@ class DurableConsumptionModelClass(ModelClass):
         # a. baseline parameters
         
         # horizon and life cycle
-        par.Tmin = 0 # age when entering the model
-        par.T = 30 - par.Tmin # age of death
-        par.Tr = 20 - par.Tmin # retirement age
+        par.Tmin = 25 # age when entering the model
+        par.T = 80 - par.Tmin # age of death
+        par.Tr = 65 - par.Tmin # retirement age
         par.G = 1.02 # growth in permanent income
-        par.L = np.ones(par.T-1)
+        par.L = np.ones(par.T-1) # retirement profile
         par.L[0:par.Tr] = np.linspace(1,1/par.G,par.Tr) 
         par.L[par.Tr-1] = 0.67 # drop in permanent income at retirement age
         par.L[par.Tr-1:] = par.L[par.Tr-1:]/par.G # constant permanent income after retirement
         
         # preferences
-        par.beta = 0.965
-        par.rho = 2.0
-        par.alpha = 0.9
-        par.d_ubar = 1e-2
-        par.phi = 0.8
+        par.beta = 0.965  # subjective discount factor
+        par.rho = 2.0   # risk aversion
+        par.alpha = 0.9 # relative share of consumption in utility
+        par.d_ubar = 1e-2 # minimum level of housing
+        par.phi = 0.8 # housing services scale
 
         # returns and income
-        par.housing_shock = True
-        par.R = 1.02
-        par.spread = 0.07
-        par.Rh = par.R + par.spread
-        par.tau = 0.05
-        par.gamma = 0.05 
-        par.delta = 0.02
-        par.sigma_psi = 0.1
-        par.sigma_xi = 0.1
-        par.sigma_epsilon = 0.0016
-        par.Nz = 5
-        par.Npsi = 5
-        par.Nxi = 5
-        par.pi = -0.25
-        par.mu = 0.5    # probably remove this
-        par.mpc_eps = 0.00739 # because mean_y * 0.75 pct / same ratio as KaplanViolante2022
+        par.housing_shock = True # whether to include housing shock
+        par.R = 1.03 # return on cash-on-hand
+        par.spread = 0.05 # IR differential between cash and housing 
+        par.Rh = par.R + par.spread # return on housing
+        par.tau = 0.05 # relative adjustment cost 
+        par.gamma = 0.05 # probability of housing crash
+        par.delta = 0.02  # depreciation rate
+        par.sigma_psi = 0.1  # standard deviation of permanent income shocks
+        par.sigma_xi = 0.1 # standard deviation of transitory income shocks
+        par.sigma_epsilon = 0.04 # standard deviation of housing shocks
+        par.Nz = 5 # number of quadrature nodes for housing shock
+        par.Npsi = 5 # number of quadrature nodes for permanent income shock
+        par.Nxi = 5 # number of quadrature nodes for transitory income shock
+        par.pi = -0.25 # housing shock impact
+        par.mpc_eps = 0.00739 # bump / windfall
 
         # grids
-        par.Np = 50
-        par.p_min = 1e-4
-        par.p_max = 3.0
-        par.Nn = 100
-        par.n_max = 5.0
-        par.Nm = 75
-        par.m_max = 10.0    
-        par.Nx = 100
-        par.x_max = par.m_max + par.n_max
-        par.Na = 125
-        par.a_max = par.m_max+1.0
+        par.Np = 50 # number of points in permanent income grid
+        par.p_min = 1e-4 # minimum permanent income
+        par.p_max = 3.0 # maximum permanent income
+        par.Nn = 100  # number of points in housing level grid
+        par.n_max = 9.0 # maximum housing level
+        par.Nm = 100 # number of points in housing price grid
+        par.m_max = 10.0  # maximum cash-on-hand level  
+        par.Nx = 100 # number of points in cash-on-hand (after adj) grid
+        par.x_max = par.m_max + par.n_max # maximum cash-on-hand (after adj)
+        par.Na = 100 # number of points in assets grid
+        par.a_max = par.m_max+1.0 # maximum assets
 
         # simulation
-        par.sigma_p0 = 0.2
-        par.mu_d0 = 0.8
-        par.sigma_d0 = 0.2
-        par.mu_a0 = 0.2
-        par.sigma_a0 = 0.1
-        par.simN = 5000
-        par.sim_seed = 1998
-        par.euler_cutoff = 0.02
-        par.moments_noise = 0.1
-        par.moments_minage = 0
-        par.moments_maxage = 30
-        par.moments_numsim = 1
+        par.sigma_p0 = 0.2 # standard deviation of initial permanent income
+        par.mu_d0 = 0.8 # mean initial housing level 
+        par.sigma_d0 = 0.2 # standard deviation of initial housing level
+        par.mu_a0 = 0.2 # mean initial assets
+        par.sigma_a0 = 0.1 # standard deviation of initial assets
+        par.simN = 10_000 # number of simulated agents
+        par.sim_seed = 1998 # seed for random number generator
+        par.euler_cutoff = 0.02 # euler error cutoff
+        par.moments_noise = 0.1 # moments noise
+        par.moments_minage = 0 # min age when moments are available
+        par.moments_maxage = 30 # max age when moments are available
+        par.moments_numsim = 10 # number of simulations for moments
 
         # misc
-        par.solmethod = 'nvfi'
-        par.t = 0
-        par.tol = 1e-8
-        par.do_print = False
-        par.do_print_period = False
-        par.do_simple_wq = False # not using optimized interpolation in C++
+        par.solmethod = 'nvfi' # default solution method
+        par.t = 0 # initial time
+        par.tol = 1e-8 # tolerance for solution
+        par.do_print = False # whether to print solution progress
+        par.do_print_period = False # whether to print solution progress every period
         par.do_marg_u = False # calculate marginal utility for use in egm
         
     def allocate(self):
         """ allocate model, i.e. create grids and allocate solution and simluation arrays """
 
-        self.create_grids()
-        self.solve_prep()
-        self.simulate_prep()
+        self.create_grids() # create grids
+        self.solve_prep() # allocate solution arrays
+        self.simulate_prep() # allocate simulation arrays
             
     def create_grids(self):
         """ construct grids for states and shocks """
         
         par = self.par
 
-        if par.solmethod == 'negm':
-            par.do_marg_u = True
+        if par.solmethod == 'negm': 
+            par.do_marg_u = True # endogenous grid point method setting
 
         # a. states        
         par.grid_p = nonlinspace(par.p_min,par.p_max,par.Np,1.1)
@@ -154,14 +153,12 @@ class DurableConsumptionModelClass(ModelClass):
         par.grid_x = nonlinspace(0,par.x_max,par.Nx,1.1)
         
         # b. post-decision states
-        #par.grid_a = nonlinspace(0,par.a_max,par.Na,1.1)
         par.grid_a = np.nan + np.zeros((par.Nn,par.Na))
         
         for i_n in range(par.Nn): 
            par.grid_a[i_n,:] = nonlinspace(0,par.a_max,par.Na,1.1)
         
         # c. shocks
-
         shocks = create_PT_shocks(
             sigma_psi=par.sigma_psi,
             Npsi=par.Npsi,
@@ -263,9 +260,10 @@ class DurableConsumptionModelClass(ModelClass):
             do_assert (bool,optional): make assertions on the solution
         
         """
+        total_solve_time = 0
 
         tic = time.time()
-            
+        
         # backwards induction
         for t in reversed(range(self.par.T)):
             
@@ -302,7 +300,7 @@ class DurableConsumptionModelClass(ModelClass):
                     toc_w = time.time()
                     par.time_w[t] = toc_w-tic_w
                     if par.do_print:
-                        print(f'  w computed in {toc_w-tic_w:.1f} secs')
+                        print(f' w computed in {toc_w-tic_w:.1f} secs')
 
                     if do_assert and par.solmethod in ['nvfi','negm']:
                         assert np.all((sol.inv_w[t] > 0) & (np.isnan(sol.inv_w[t]) == False)), t 
@@ -322,7 +320,7 @@ class DurableConsumptionModelClass(ModelClass):
                     toc_keep = time.time()
                     par.time_keep[t] = toc_keep-tic_keep
                     if par.do_print:
-                        print(f'  solved keeper problem in {toc_keep-tic_keep:.1f} secs')
+                        print(f' solved keeper problem in {toc_keep-tic_keep:.1f} secs')
 
                     if do_assert:
                         assert np.all((sol.c_keep[t] >= 0) & (np.isnan(sol.c_keep[t]) == False)), t
@@ -339,7 +337,7 @@ class DurableConsumptionModelClass(ModelClass):
                     toc_adj = time.time()
                     par.time_adj[t] = toc_adj-tic_adj
                     if par.do_print:
-                        print(f'  solved adjuster problem in {toc_adj-tic_adj:.1f} secs')
+                        print(f' solved adjuster problem in {toc_adj-tic_adj:.1f} secs')
 
                     if do_assert:
                         assert np.all((sol.d_adj[t] >= 0) & (np.isnan(sol.d_adj[t]) == False)), t
@@ -348,8 +346,13 @@ class DurableConsumptionModelClass(ModelClass):
 
                 # iii. print
                 toc = time.time()
+                total_solve_time += toc-tic
                 if par.do_print or par.do_print_period:
                     print(f' t = {t} solved in {toc-tic:.1f} secs')
+        if par.do_print:
+            print(f' total precomputation time  = {par.time_w.sum():.1f} secs')
+            print(f' total keep-time  = {par.time_keep.sum():.1f} secs')
+            print(f' total adj-time   = {par.time_adj.sum():.1f} secs')
 
     ############
     # simulate #
@@ -468,82 +471,8 @@ class DurableConsumptionModelClass(ModelClass):
     def egm(self):        
         figs.egm(self)
 
-    def lifecycle(self,deciles=False):        
-        figs.lifecycle(self,deciles=deciles)
+    def lifecycle(self,quantiles=False):        
+        figs.lifecycle(self,quantiles=quantiles)
 
     def mpc_over_cash_on_hand(self):
         figs.mpc_over_cash_on_hand(self)
-
-    ###########
-    # analyze #
-    ###########
-
-    # def analyze(self,solve=True,do_assert=True,**kwargs):
-        
-    #     par = self.par
-
-    #     for key,val in kwargs.items():
-    #         setattr(par,key,val)
-        
-    #     self.create_grids()
-
-    #     # solve and simulate
-    #     if solve:
-    #         self.precompile_numba()
-    #         self.solve(do_assert)
-    #     self.simulate(do_euler_error=True,do_utility=True)
-
-    #     # print
-    #     self.print_analysis()
-
-    # def print_analysis(self):
-
-    #     par = self.par
-    #     sim = self.sim
-
-    #     def avg_euler_error(model,I):
-    #         if I.any():
-    #             return np.nanmean(model.sim.euler_error_rel.ravel()[I])
-    #         else:
-    #             return np.nan
-
-    #     def percentile_euler_error(model,I,p):
-    #         if I.any():
-    #             return np.nanpercentile(model.sim.euler_error_rel.ravel()[I],p)
-    #         else:
-    #             return np.nan
-
-    #     # population
-    #     keepers = sim.discrete[:-1,:].ravel() == 0
-    #     adjusters = sim.discrete[:-1,:].ravel() > 0
-    #     everybody = keepers | adjusters
-
-    #     # print
-    #     time = par.time_w+par.time_adj+par.time_keep
-    #     txt = f'Name: {self.name} (solmethod = {par.solmethod})\n'
-    #     txt += f'Grids: (p,n,m,x,a) = ({par.Np},{par.Nn},{par.Nm},{par.Nx},{par.Na})\n'
-        
-    #     txt += 'Timings:\n'
-    #     txt += f' total: {np.sum(time):.1f}\n'
-    #     txt += f'     w: {np.sum(par.time_w):.1f}\n'
-    #     txt += f'  keep: {np.sum(par.time_keep):.1f}\n'
-    #     txt += f'   adj: {np.sum(par.time_adj):.1f}\n'
-    #     txt += f'Utility: {np.mean(sim.utility):.6f}\n'
-        
-    #     txt += 'Euler errors:\n'
-    #     txt += f'     total: {avg_euler_error(self,everybody):.2f} ({percentile_euler_error(self,everybody,5):.2f},{percentile_euler_error(self,everybody,95):.2f})\n'
-    #     txt += f'   keepers: {avg_euler_error(self,keepers):.2f} ({percentile_euler_error(self,keepers,5):.2f},{percentile_euler_error(self,keepers,95):.2f})\n'
-    #     txt += f' adjusters: {avg_euler_error(self,adjusters):.2f} ({percentile_euler_error(self,adjusters,5):.2f},{percentile_euler_error(self,adjusters,95):.2f})\n'
-
-    #     txt += 'Moments:\n'
-
-    #     txt += f' adjuster share: {np.mean(sim.discrete):.3f}\n'
-        
-    #     txt += f'         mean c: {np.mean(sim.c):.3f}\n'
-    #     txt += f'          var c: {np.var(sim.c):.3f}\n'
-
-
-    #     txt += f'         mean d: {np.mean(sim.d):.3f}\n'
-    #     txt += f'          var d: {np.var(sim.d):.3f}\n'
-
-    #     print(txt)
