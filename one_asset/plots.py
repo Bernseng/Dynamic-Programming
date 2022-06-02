@@ -108,8 +108,8 @@ def lifecycle(par, sim,deciles:bool=False):
         if i in [len(simvarlist)-i-1 for i in range(cols)]:
             ax.set_xlabel('age')
     plt.tight_layout()
-    plt.savefig('output/lifecycle_oneasset.png')
     plt.show()
+    plt.savefig('output/lifecycle_oneasset.png')
     
 
 def mpc_over_cash_on_hand(par,sol,sim):
@@ -187,5 +187,5 @@ def mpc_over_cash_on_hand_60(par,sol,sim):
     plt.ylabel('$\mathcal{MPC}_t$',fontsize=15)
     plt.legend(fontsize=15)
     plt.tight_layout()
-    plt.savefig('output/mpc_over_wealth_oneasset_60s.png')
     plt.show()
+    plt.savefig('output/mpc_over_wealth_oneasset_60s.png')

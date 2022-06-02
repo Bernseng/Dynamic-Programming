@@ -73,7 +73,7 @@ class TwoAssetModelClass(ModelClass):
         
         # preferences
         par.beta = 0.965  # subjective discount factor
-        par.rho = 2.0 # risk aversion
+        par.rho = 2.0 # CRRA coeficient
         par.alpha = 0.9 # relative share of consumption in utility
         par.d_ubar = 1e-2 # minimum level of housing
         par.phi = 0.8 # housing services scale
@@ -292,14 +292,15 @@ class TwoAssetModelClass(ModelClass):
                     # o. compute post-decision functions
                     tic_w = time.time()
 
-                    if par.solmethod in ['nvfi']:
+                    if par.solmethod == 'nvfi':
                         post_decision.compute_wq(t,sol,par)
-                    else: 
+                    elif par.solmethod == 'negm': 
                         post_decision.compute_wq(t,sol,par,compute_q=True)                
-
+                    else: 
+                        pass
                     toc_w = time.time()
                     par.time_w[t] = toc_w-tic_w
-                    if par.do_print:
+                    if par.do_print and par.solmethod != 'vfi':
                         print(f' w computed in {toc_w-tic_w:.1f} secs')
 
                     if do_assert and par.solmethod in ['nvfi','negm']:
