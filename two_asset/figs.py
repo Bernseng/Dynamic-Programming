@@ -171,65 +171,6 @@ def _keep(model,t,i_p):
 
     plt.show()
 
-#######
-# egm #
-#######
-
-def egm(model):
-    widgets.interact(_egm,
-        model=widgets.fixed(model),
-        t=widgets.Dropdown(description='t', 
-            options=list(range(model.par.T-1)), value=0),
-        i_p=widgets.Dropdown(description='ip', 
-            options=list(range(model.par.Np)), value=np.int(model.par.Np/2)),
-        i_n=widgets.Dropdown(description='in', 
-            options=list(range(model.par.Nn)), value=np.int(model.par.Nn/2))
-        )
-
-def _egm(model,t,i_p,i_n):
-
-    # a. unpack
-    par = model.par
-    sol = model.sol
-
-    # b. figure
-    fig = plt.figure(figsize=(12,6))
-    ax_c = fig.add_subplot(1,2,1)
-    ax_v = fig.add_subplot(1,2,2)
-    
-    # c. plot before
-    c_vec = sol.q_c[t,i_p,i_n]
-    m_vec = sol.q_m[t,i_p,i_n]
-    ax_c.plot(m_vec,c_vec,'o',MarkerSize=0.5,label='before')
-    ax_c.set_title(f'$c$ ($t = {t}$, $p = {par.grid_p[i_p]:.2f}$, $n = {par.grid_n[i_n]:.2f}$)',pad=10)
-
-    inv_v_vec = np.zeros(par.Na)
-    for i_a in range(par.Na):
-        inv_v_vec[i_a] = utility.func(c_vec[i_a],par.grid_n[i_n],par) + (-1/sol.inv_w[t,i_p,i_n,i_a])
-    inv_v_vec = -1.0/inv_v_vec
-
-    ax_v.plot(m_vec,inv_v_vec,'o',MarkerSize=0.5,label='before')
-    ax_v.set_title(f'neg. inverse $v$ ($t = {t}$, $p = {par.grid_p[i_p]:.2f}$, $n = {par.grid_n[i_n]:.2f}$)',pad=10)
-
-    # d. plot after
-    c_vec = sol.c_keep[t,i_p,i_n,:]
-    ax_c.plot(par.grid_m,c_vec,'o',MarkerSize=0.5,label='after')
-    
-    inv_v_vec = sol.inv_v_keep[t,i_p,i_n,:]
-    ax_v.plot(par.grid_m,inv_v_vec,'o',MarkerSize=0.5,label='after')
-
-    # e. details
-    ax_c.legend()
-    ax_c.set_ylabel('$c_t$')
-    ax_c.set_ylim([c_vec[0],c_vec[-1]])
-    ax_v.set_ylim([inv_v_vec[0],inv_v_vec[-1]])
-    for ax in [ax_c,ax_v]:
-        ax.grid(True)
-        ax.set_xlabel('$m_t$')
-        ax.set_xlim([par.grid_m[0],par.grid_m[-1]])
-
-    plt.show()
-
 #############
 # lifecycle #
 #############
@@ -253,8 +194,7 @@ def lifecycle(model,quantiles:bool=False):
                   ('m','$m_t$'),
                   ('c','$c_t$'),
                   ('a','$a_t$'),
-                  ('discrete','adjuster share'),
-                  ('mpc','$\mathcal{MPC}_t$'),                  
+                  ('discrete','adjuster share')                  
                   ]
 
     # determine number of rows in figure, given the number of columns
@@ -277,7 +217,7 @@ def lifecycle(model,quantiles:bool=False):
                 ax.plot(age, series.T,lw=2)
                 if i == 0: ax.legend(np.arange(0, 100, 25),title='Quantiles',fontsize=8)
             else:
-                ax.plot(age,np.mean(np.maximum(simdata,0.0),axis=1),lw=2)
+                ax.plot(age,np.mean(simdata,axis=1),lw=2)
 
         else:
             ax.plot(age,np.mean(simdata,axis=1),lw=2)
@@ -295,65 +235,8 @@ def lifecycle(model,quantiles:bool=False):
         ax.grid(True)
         if i in [len(simvarlist)-i-1 for i in range(cols)]:
             ax.set_xlabel('age')
-    plt.savefig('output/life_cycle.png')
-    plt.show()
-
-def lifecycle_compare(model1,latex1,model2,latex2,do_euler_errors=False):
-
-    # a. unpack
-    par = model1.par
-    sim1 = model1.sim
-    sim2 = model2.sim
-
-    # b. figure
-    fig = plt.figure(figsize=(12,16))
-
-    simvarlist = [('p','$p_t$',None),
-                ('n','$n_t$',None),
-                ('m','$m_t$',None),
-                ('c','$c_t$',None),
-                ('d','$d_t$',None),
-                ('a','$a_t$',None),
-                ('discrete','adjuster share',None)]
-            
-    if do_euler_errors:
-        simvarlist.append(('euler_error_rel','avg. euler error',None))
-
-    age = np.arange(par.T)+par.Tmin
-    for i,(simvar,simvarlatex,j) in enumerate(simvarlist):
-
-        ax = fig.add_subplot(4,2,i+1)
-
-        if simvar == 'euler_error_rel':
-
-            simdata = getattr(sim1,simvar)[:par.T-1,:]
-            ax.plot(age[:-1],np.nanmean(simdata,axis=1),lw=2,label=latex1)
-
-            simdata = getattr(sim2,simvar)[:par.T-1,:]
-            ax.plot(age[:-1],np.nanmean(simdata,axis=1),lw=2,label=latex2)
-
-        else:
-            
-            simdata = getattr(sim1,simvar)[:par.T,:]
-            ax.plot(age,np.mean(simdata,axis=1),lw=2,label=latex1)
-            
-            simdata = getattr(sim2,simvar)[:par.T,:]
-            ax.plot(age,np.mean(simdata,axis=1),lw=2,label=latex2)
-
-        ax.set_title(simvarlatex)
-        if par.T > 10:
-            ax.xaxis.set_ticks(age[::5])
-        else:
-            ax.xaxis.set_ticks(age)
-
-        ax.grid(True)
-        if simvar in ['discrete','euler_error_rel']:
-            if simvar == 'discrete' and not j == 3:
-                continue
-            ax.set_xlabel('age')
-    
-        ax.legend()
-        
+    plt.tight_layout()
+    plt.savefig('output/life_cycle_twoasset.png')
     plt.show()
 
 def mpc_over_cash_on_hand(model):
@@ -387,5 +270,6 @@ def mpc_over_cash_on_hand(model):
     plt.ylabel('$\mathcal{MPC}_t$')
     plt.title('$\mathcal{MPC}$ as a function of cash-on-hand (Keep-problem)')
     plt.legend()
+    plt.tight_layout()
     plt.savefig('output/mpc_over_wealth_twoasset.png')
     plt.show()
