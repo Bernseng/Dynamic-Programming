@@ -67,8 +67,7 @@ def lifecycle(par, sim,deciles:bool=False):
                   ('Y','$Y_t$'),
                   ('M','$M_t$'),
                   ('C','$C_t$'),
-                  ('A','$A_t$'),
-                  #('mpc','$\mathcal{MPC}_t$'),                  
+                  ('A','$A_t$')                  
                   ]
 
     # determine number of rows in figure, given the number of columns
@@ -141,6 +140,8 @@ def mpc_over_cash_on_hand(par,sol,sim):
     for t in np.arange(5,par.T,10):
         plt.plot(m_grid[1:],np.mean(mpc[t:t+9,1:],axis=0),label='t={}-{}'.format(t+par.Tmin,t+par.Tmin+9),lw=2.3)
     plt.xlim(0,3)
+    plt.xticks(fontsize=14)
+    plt.yticks(fontsize=14)
     plt.xlabel('Cash-on-hand, $m_t$',fontsize=15)
     plt.ylabel('$\mathcal{MPC}_t$',fontsize=15)
     #plt.title('$\mathcal{MPC}$ as a function of cash-on-hand', fontweight='bold')
@@ -177,6 +178,8 @@ def mpc_over_cash_on_hand_60(par,sol,sim):
     for t in np.arange(par.T-20,par.T-10,1):
         plt.plot(m_grid[1:],mpc[t,1:],label='t={}'.format(t+par.Tmin),lw=2.3)
     plt.xlim(0,3)
+    plt.xticks(fontsize=14)
+    plt.yticks(fontsize=14)
     plt.xlabel('Cash-on-hand, $m_t$',fontsize=15)
     plt.ylabel('$\mathcal{MPC}_t$',fontsize=15)
     #plt.title('$\mathcal{MPC}$ as a function of cash-on-hand', fontweight='bold')
