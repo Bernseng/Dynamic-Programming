@@ -108,7 +108,9 @@ def lifecycle(par, sim,deciles:bool=False):
         if i in [len(simvarlist)-i-1 for i in range(cols)]:
             ax.set_xlabel('age')
 
+    plt.savefig('output/lifecycle_oneasset.png')
     plt.show()
+    
 
 def mpc_over_cash_on_hand(par,sol,sim):
     """ plot mpc as a function of cash-on-hand for given t """
@@ -144,8 +146,8 @@ def mpc_over_cash_on_hand(par,sol,sim):
     plt.yticks(fontsize=14)
     plt.xlabel('Cash-on-hand, $m_t$',fontsize=15)
     plt.ylabel('$\mathcal{MPC}_t$',fontsize=15)
-    #plt.title('$\mathcal{MPC}$ as a function of cash-on-hand', fontweight='bold')
     plt.legend(fontsize=15)
+    plt.savefig('output/mpc_over_wealth_oneasset.png')
     plt.show()
     
 def mpc_over_cash_on_hand_60(par,sol,sim):
@@ -182,6 +184,6 @@ def mpc_over_cash_on_hand_60(par,sol,sim):
     plt.yticks(fontsize=14)
     plt.xlabel('Cash-on-hand, $m_t$',fontsize=15)
     plt.ylabel('$\mathcal{MPC}_t$',fontsize=15)
-    #plt.title('$\mathcal{MPC}$ as a function of cash-on-hand', fontweight='bold')
     plt.legend(fontsize=15)
+    plt.savefig('output/mpc_over_wealth_oneasset_60s.png')
     plt.show()
