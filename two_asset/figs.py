@@ -76,7 +76,7 @@ def lifecycle(model,quantiles:bool=False):
         if i in [len(simvarlist)-i-1 for i in range(cols)]:
             ax.set_xlabel('age')
     plt.tight_layout()
-    plt.savefig('output/life_cycle.png')
+    plt.savefig('output/life_cycle_twoasset.png')
     plt.show()
 
 def mpc_over_cash_on_hand(model):
@@ -101,9 +101,9 @@ def mpc_over_cash_on_hand(model):
                     p_bar[t],n_bar[t],m+model.par.mpc_eps)
             mpc[t,i] = (c1[t,i]-c0[t,i])/model.par.mpc_eps
 
-    plt.figure(figsize=(12,8))
+    plt.figure(figsize=(9,6))
     for t in np.arange(5,model.par.T,10):
-       plt.plot(model.par.grid_m,np.mean(mpc[t:t+9,:],axis=0),label='t={}-{}'.format(t+model.par.Tmin,t+model.par.Tmin+9))
+       plt.plot(model.par.grid_m,np.mean(mpc[t:t+9,:],axis=0),label='t={}-{}'.format(t+model.par.Tmin,t+model.par.Tmin+9),lw=2.3)
 
     plt.xlim(0,5)
     plt.xticks(fontsize=14)
