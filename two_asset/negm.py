@@ -34,14 +34,10 @@ def solve_keep(t,sol,par):
             for i_a in range(par.Na):
                 q_c[i_p,i_n,i_a] = utility.inv_marg_func(sol.q[t,i_p,i_n,i_a],n,par)
                 q_m[i_p,i_n,i_a] = par.grid_a[i_n,i_a] + q_c[i_p,i_n,i_a]
-                #q_m[i_p,i_n,i_a] = par.grid_a[i_a] + q_c[i_p,i_n,i_a]
-
         
             # upperenvelope
             negm_upperenvelope(par.grid_a[i_n,:],q_m[i_p,i_n],q_c[i_p,i_n],sol.inv_w[t,i_p,i_n],
                par.grid_m,c[i_p,i_n],v_ast_vec,n,par)     
-            # negm_upperenvelope(par.grid_a,q_m[i_p,i_n],q_c[i_p,i_n],sol.inv_w[t,i_p,i_n],
-            #    par.grid_m,c[i_p,i_n],v_ast_vec,n,par)      
 
             # negative inverse
             for i_m in range(par.Nm):
