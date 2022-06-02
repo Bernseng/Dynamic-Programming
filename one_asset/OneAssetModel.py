@@ -11,7 +11,7 @@ Solves the Deaton-Carroll buffer-stock consumption model with vfi or egm:
 
 import time
 import numpy as np
-from numba import njit, prange
+from numba import njit
 
 # consav package
 from consav import ModelClass, jit # baseline model class and jit
@@ -27,7 +27,7 @@ import simulate
 # 2. model #
 ############
 
-class ConsumptionSavingModelClass(ModelClass):
+class OneAssetModelClass(ModelClass):
     
     #########
     # setup #

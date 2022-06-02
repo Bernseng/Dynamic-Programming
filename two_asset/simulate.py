@@ -20,6 +20,7 @@ def lifecycle(sim,sol,par):
     c = sim.c
     d = sim.d
     a = sim.a
+    c_bump = sim.c_bump
     mpc = sim.mpc
     discrete = sim.discrete
     
@@ -40,10 +41,10 @@ def lifecycle(sim,sol,par):
 
             # b. optimal choices and post decision states
 
-            optimal_choice(i,t,p[t,i],n[t,i],m[t,i],discrete[t,i:],d[t,i:],c[t,i:],a[t,i:],sol,par,mpc[t,i:])
+            optimal_choice(i,t,p[t,i],n[t,i],m[t,i],discrete[t,i:],d[t,i:],c[t,i:],a[t,i:],sol,par,mpc[t,i:],c_bump[t,i:])
             
 @njit            
-def optimal_choice(i,t,p,n,m,discrete,d,c,a,sol,par,mpc):
+def optimal_choice(i,t,p,n,m,discrete,d,c,a,sol,par,mpc,c_bump):
 
     x = trans.x_plus_func(m,n,par)
     x_mpc = trans.x_plus_func(m+par.mpc_eps,n,par)
@@ -69,30 +70,41 @@ def optimal_choice(i,t,p,n,m,discrete,d,c,a,sol,par,mpc):
         c[0] = linear_interp.interp_2d(
             par.grid_p,par.grid_x,sol.c_adj[t],
             p,x)
-
-        if adjust==adjust_mpc:
-            mpc[0] = (linear_interp.interp_2d(par.grid_p,par.grid_x,sol.c_adj[t],
-                p,x_mpc) - c[0]) / par.mpc_eps
-        else:
-            mpc[0] = (linear_interp.interp_3d(
-            par.grid_p,par.grid_n,par.grid_m,sol.c_keep[t],
-            p,n,m+par.mpc_eps) - c[0]) / par.mpc_eps
-        #if adjust != adjust_mpc:
-            # print('t=',t,'i=',i,'\n',
-            #     'adjust->keep',mpc[0],'\n',
-            #     'm+bump - x:',m+par.mpc_eps - x,'\n',
-            #     'consumption diff',linear_interp.interp_3d(
-            #         par.grid_p,par.grid_n,par.grid_m,sol.c_keep[t],
-            #         p,n,m+par.mpc_eps) - c[0])
-
+        
         tot = d[0]+c[0]
+
         if tot > x: 
             d[0] *= x/tot
             c[0] *= x/tot
             a[0] = 0.0
         else:
             a[0] = x - tot
-            
+
+        # calculate mpc
+        if par.cross_compute:
+
+            if adjust==adjust_mpc:
+                c_bump[0] = linear_interp.interp_2d(par.grid_p,par.grid_x,sol.c_adj[t],
+                    p,x_mpc)
+            else:
+                c_bump[0] = linear_interp.interp_3d(
+                par.grid_p,par.grid_n,par.grid_m,sol.c_keep[t],
+                p,n,m+par.mpc_eps)
+        else:
+            c_bump[0] = linear_interp.interp_2d(par.grid_p,par.grid_x,sol.c_adj[t],
+                p,x_mpc)
+
+        tot = d[0]+c_bump[0]
+
+        if tot > x+par.mpc_eps: 
+            d[0] *= (x+par.mpc_eps)/tot
+            c_bump[0] *= (x+par.mpc_eps)/tot
+            a[0] = 0.0
+        else:
+            a[0] = (x+par.mpc_eps) - tot
+
+        mpc[0] = (c_bump[0] - c[0]) / par.mpc_eps
+
     else: 
             
         discrete[0] = 0
@@ -103,21 +115,35 @@ def optimal_choice(i,t,p,n,m,discrete,d,c,a,sol,par,mpc):
             par.grid_p,par.grid_n,par.grid_m,sol.c_keep[t],
             p,n,m)
 
-        if adjust==adjust_mpc:
-            mpc[0] = (linear_interp.interp_3d(
-                par.grid_p,par.grid_n,par.grid_m,sol.c_keep[t],
-                p,n,m+par.mpc_eps) - c[0]) / par.mpc_eps
-        else:
-        #if adjust != adjust_mpc:
-            mpc[0] = (linear_interp.interp_2d(par.grid_p,par.grid_x,sol.c_adj[t],
-                p,x_mpc) - c[0]) / par.mpc_eps  
-            #print('keep->adjust',mpc[0])
-     
         if c[0] > m: 
             c[0] = m
             a[0] = 0.0
         else:
             a[0] = m - c[0]
+        
+        # calculate mpc
+        if par.cross_compute:
+            if adjust==adjust_mpc:
+                c_bump[0] = linear_interp.interp_3d(
+                    par.grid_p,par.grid_n,par.grid_m,sol.c_keep[t],
+                    p,n,m+par.mpc_eps)
+            else:
+                c_bump[0] = linear_interp.interp_2d(par.grid_p,par.grid_x,sol.c_adj[t],
+                    p,x_mpc)
+        else: 
+            c_bump[0] = linear_interp.interp_3d(
+                par.grid_p,par.grid_n,par.grid_m,sol.c_keep[t],
+                p,n,m+par.mpc_eps)
+
+        if c_bump[0] > (m+par.mpc_eps): 
+            c_bump[0] = m+par.mpc_eps
+            a[0] = 0.0
+        else:
+            a[0] = m + par.mpc_eps - c_bump[0]
+
+        mpc[0] = (c_bump[0] - c[0]) / par.mpc_eps
+
+
 
 @njit            
 def euler_errors(sim,sol,par):
@@ -130,7 +156,8 @@ def euler_errors(sim,sol,par):
         
         discrete_plus = np.zeros(1)
         d_plus = np.zeros(1)
-        c_plus = np.zeros(1)
+        c_plus = np.zeros(1)        
+        c_bump_plus = np.zeros(1)
         a_plus = np.zeros(1)
 
         for t in range(par.T-1):
@@ -164,7 +191,7 @@ def euler_errors(sim,sol,par):
 
                     # iv. next-period choices
 
-                    optimal_choice(t+1,p_plus,n_plus,m_plus,discrete_plus,d_plus,c_plus,a_plus,sol,par)
+                    optimal_choice(t+1,p_plus,n_plus,m_plus,discrete_plus,d_plus,c_plus,a_plus,sol,par,c_bump_plus)
 
                     # v. next-period marginal utility
 

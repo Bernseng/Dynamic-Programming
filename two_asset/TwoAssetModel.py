@@ -20,7 +20,6 @@ import numpy as np
 from consav import ModelClass, jit # baseline model class and jit
 
 from consav.grids import nonlinspace
-from torch import quantile # grids
 from quadrature import create_PT_shocks # income shocks
 
 # local modules
@@ -32,7 +31,7 @@ import negm
 import simulate
 import figs
 
-class DurableConsumptionModelClass(ModelClass):
+class TwoAssetModelClass(ModelClass):
     
     #########
     # setup #
@@ -95,6 +94,7 @@ class DurableConsumptionModelClass(ModelClass):
         par.Nxi = 5 # number of quadrature nodes for transitory income shock
         par.pi = -0.25 # housing shock impact
         par.mpc_eps = 0.00739 # bump / windfall
+        par.cross_compute = True # whether to cross-compte MPC's
 
         # grids
         par.Np = 50 # number of points in permanent income grid
@@ -382,6 +382,7 @@ class DurableConsumptionModelClass(ModelClass):
 
         sim.d = np.zeros(sim_shape)
         sim.c = np.zeros(sim_shape)
+        sim.c_bump = np.zeros(sim_shape)
         sim.a = np.zeros(sim_shape)
         sim.mpc = np.zeros(sim_shape)
         
@@ -396,7 +397,7 @@ class DurableConsumptionModelClass(ModelClass):
         sim.xi = np.zeros((par.T,par.simN))
         sim.z = np.zeros(par.T)    # economy wide shock
 
-    def simulate(self,do_utility=False,do_euler_error=False):
+    def simulate(self,do_utility=False,do_euler_error=False):  #,seed=1998):
         """ simulate the model """
 
         par = self.par
@@ -404,6 +405,10 @@ class DurableConsumptionModelClass(ModelClass):
         sim = self.sim
 
         tic = time.time()
+
+        # set seed
+        # if not seed is None:
+        #     np.random.seed(seed)
 
         # a. random shocks
         sim.p0[:] = np.random.lognormal(mean=-0.2,sigma=par.sigma_p0,size=par.simN)

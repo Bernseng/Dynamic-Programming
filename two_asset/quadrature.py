@@ -161,4 +161,4 @@ def create_PT_shocks(sigma_psi,Npsi,sigma_xi,Nxi,sigma_epsilon,Nz,gamma,pi):
     psi,xi,z = np.meshgrid(psi,xi,z,indexing='ij')
     psi_w,xi_w,z_w = np.meshgrid(psi_w,xi_w,z_w,indexing='ij')
 
-    return psi.ravel(),psi_w.ravel(),xi.ravel(),xi_w.ravel(),z.ravel(), z_w.ravel(), psi.size
+    return psi.ravel(),psi_w.ravel(),xi.ravel(),xi_w.ravel(),z.ravel(),z_w.ravel(),psi.size
