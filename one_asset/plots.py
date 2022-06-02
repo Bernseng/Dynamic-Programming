@@ -112,7 +112,8 @@ def lifecycle(par, sim,deciles:bool=False):
     plt.show()
 
 def mpc_over_cash_on_hand(par,sol,sim):
-    # plot mpc as a function of cash-on-hand for given t
+    """ plot mpc as a function of cash-on-hand for given t """
+    
     m_grid =  nonlinspace(0,par.m_max,par.Nm+1,1.1) # par.grid_m
 
     c0 = np.zeros(shape=(par.T, len(m_grid)))
@@ -136,12 +137,48 @@ def mpc_over_cash_on_hand(par,sol,sim):
             if i == 0: continue
             mpc[t,i] = (c1[t,i]-c0[t,i])/bump
     
-    plt.figure(figsize=(12,8))
-    for t in np.arange(0,par.T-10,10):
-        plt.plot(m_grid[1:],np.mean(mpc[t:t+9,1:],axis=0),label='t={}-{}'.format(t+par.Tmin,t+par.Tmin+9))
+    plt.figure(figsize=(9,6))
+    for t in np.arange(5,par.T,10):
+        plt.plot(m_grid[1:],np.mean(mpc[t:t+9,1:],axis=0),label='t={}-{}'.format(t+par.Tmin,t+par.Tmin+9),lw=2.3)
     plt.xlim(0,3)
-    plt.xlabel('Cash-on-hand, $m_t$')
-    plt.ylabel('$\mathcal{MPC}_t$')
-    plt.title('$\mathcal{MPC}$ as a function of cash-on-hand', fontweight='bold')
-    plt.legend()
+    plt.xlabel('Cash-on-hand, $m_t$',fontsize=15)
+    plt.ylabel('$\mathcal{MPC}_t$',fontsize=15)
+    #plt.title('$\mathcal{MPC}$ as a function of cash-on-hand', fontweight='bold')
+    plt.legend(fontsize=15)
+    plt.show()
+    
+def mpc_over_cash_on_hand_60(par,sol,sim):
+    """ plot mpc as a function of cash-on-hand for 60-69 to check retirement behavior """
+
+    m_grid =  nonlinspace(0,par.m_max,par.Nm+1,1.1) # par.grid_m
+
+    c0 = np.zeros(shape=(par.T, len(m_grid)))
+    c1 = np.zeros(shape=(par.T, len(m_grid)))
+    mpc = np.zeros(shape=(par.T, len(m_grid)))
+
+    for t in range(par.T):
+        t = int(t)    
+
+        c0[t,:] = tools.interp_linear_1d(sol.m[t,:],
+                                        sol.c[t,:],#*np.exp(sim.p[t,:]),
+                                        m_grid#*np.exp(sim.p[t,:])
+                                        )
+        bump = par.mpc_eps / np.mean(sim.P[t,:])
+        c1[t,:] = tools.interp_linear_1d(sol.m[t,:],
+                                        sol.c[t,:],#*np.exp(sim.p[t,:]),
+                                        bump+m_grid,#*np.exp(sim.p[t,:])
+                                        )
+
+        for i,m in enumerate(m_grid):
+            if i == 0: continue
+            mpc[t,i] = (c1[t,i]-c0[t,i])/bump
+
+    plt.figure(figsize=(9,6))
+    for t in np.arange(par.T-20,par.T-10,1):
+        plt.plot(m_grid[1:],mpc[t,1:],label='t={}'.format(t+par.Tmin),lw=2.3)
+    plt.xlim(0,3)
+    plt.xlabel('Cash-on-hand, $m_t$',fontsize=15)
+    plt.ylabel('$\mathcal{MPC}_t$',fontsize=15)
+    #plt.title('$\mathcal{MPC}$ as a function of cash-on-hand', fontweight='bold')
+    plt.legend(fontsize=15)
     plt.show()

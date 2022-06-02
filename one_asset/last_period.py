@@ -1,9 +1,5 @@
-import numpy as np
-from numba import njit, prange
-
-from consav import golden_section_search
+from numba import njit
 from consav.grids import nonlinspace_jit
-
 import utility
 
 @njit
