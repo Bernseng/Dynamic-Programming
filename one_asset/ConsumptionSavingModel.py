@@ -54,10 +54,10 @@ class ConsumptionSavingModelClass(ModelClass):
         par = self.par
         
         # horizon and life cycle
-        par.Tmin = 25
-        par.T = 80 - par.Tmin
+        par.Tmin = 25 # enter the model (start work life)
+        par.T = 80 - par.Tmin # death
         par.Tr = 65 - par.Tmin # retirement age (end-of-period), no retirement if TR = T
-        par.G = 1.02
+        par.G = 1.02 # growth factor
         par.L = np.ones(par.T-1)
         par.L[0:par.Tr] = np.linspace(1,1/par.G,par.Tr) 
         par.L[par.Tr-1] = 0.67 # drop in permanent income at retirement age
@@ -68,30 +68,30 @@ class ConsumptionSavingModelClass(ModelClass):
         par.beta = 0.965 # discount factor
 
         # returns and incomes
-        par.R = 1.03
-        par.sigma_psi = 0.1
+        par.R = 1.03 #return on assets
+        par.sigma_psi = 0.1 
         par.sigma_xi = 0.1
-        par.Npsi = 5
-        par.Nxi = 5
-        par.mpc_eps = 0.00749
+        par.Npsi = 5 #nodes for psi shock
+        par.Nxi = 5 #nodes for xi shock
+        par.mpc_eps = 0.00749 #bump to m for mpc calculation
         
         # grids
-        par.Nm = 100
+        par.Nm = 100 #nodes for m grid
         par.m_max = 10
         par.m_phi = 1.1 # curvature parameter
-        par.Na = 100
+        par.Na = 100 #nodes for a grid
         par.a_max = par.m_max+1.0
         par.a_phi = 1.1 # curvature parameter
-        par.Np = 50
+        par.Np = 50 #nodes for p grid
         par.p_min = 1e-4
         par.p_max = 3.0
         
         # simulation
-        par.sigma_m0 = 0.2
-        par.mu_m0 = -0.2
-        par.mu_p0 = -0.2
-        par.sigma_p0 = 0.2
-        par.simN = 5000 # number of persons in simulation
+        par.sigma_m0 = 0.2 #std for initial draw of m
+        par.mu_m0 = -0.2 #mean for initial draw of m
+        par.mu_p0 = -0.2 #mean for initial draw of p
+        par.sigma_p0 = 0.2 #std for initial draw of p
+        par.simN = 10000 # number of persons in simulation
         par.sim_seed = 1998
         par.euler_cutoff = 0.02
         
@@ -186,7 +186,7 @@ class ConsumptionSavingModelClass(ModelClass):
 
     
     def solve_prep(self):
-        """ allocate model, i.e. create grids and allocate solution and simluation arrays """
+        """ allocate model, i.e. create grids and allocate solution arrays """
         
         par = self.par
         sol = self.sol
@@ -201,9 +201,6 @@ class ConsumptionSavingModelClass(ModelClass):
         """ gateway for solving the model """
 
         par = self.par
-
-        # a. reset solution and simulation arrays
-        #self.allocate()
 
         # b. solve
         tic = time.time()
@@ -247,6 +244,7 @@ class ConsumptionSavingModelClass(ModelClass):
     ############
     
     def simulate_prep(self):
+        """ allocate simulation arrays """
         
         par = self.par
         sim = self.sim
@@ -286,7 +284,7 @@ class ConsumptionSavingModelClass(ModelClass):
         sim.euler_error_c = np.zeros(euler_shape)
         sim.euler_error_rel = np.zeros(euler_shape)
     
-    def simulate(self,do_print=True,seed=2017):
+    def simulate(self,do_print=True):
         """ simulate the model """
 
         par = self.par
@@ -314,13 +312,12 @@ class ConsumptionSavingModelClass(ModelClass):
             sim = model.sim
             
             simulate.life_cycle(par,sol,sim)
-            #simulate_old.life_cycle(par,sol,sim)
 
         toc = time.time()
 
         # e. renormalized
-        sim.P[:,:] = sim.y #np.exp(sim.p)
-        sim.Y[:,:] = sim.p #np.exp(sim.y)
+        sim.P[:,:] = sim.y 
+        sim.Y[:,:] = sim.p 
         sim.M[:,:] = sim.m*sim.P
         sim.C[:,:] = sim.c*sim.P
         sim.A[:,:] = sim.a*sim.P
