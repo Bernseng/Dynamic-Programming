@@ -34,8 +34,7 @@ def lifecycle(model,quantiles:bool=False):
                   ('m','$m_t$'),
                   ('c','$c_t$'),
                   ('a','$a_t$'),
-                  ('discrete','adjuster share'),
-                  ('mpc','$\mathcal{MPC}_t$'),                  
+                  ('discrete','adjuster share')                  
                   ]
 
     # determine number of rows in figure, given the number of columns
@@ -58,7 +57,7 @@ def lifecycle(model,quantiles:bool=False):
                 ax.plot(age, series.T,lw=2)
                 if i == 0: ax.legend(np.arange(0, 100, 25),title='Quantiles',fontsize=8)
             else:
-                ax.plot(age,np.mean(np.maximum(simdata,0.0),axis=1),lw=2)
+                ax.plot(age,np.mean(simdata,axis=1),lw=2)
 
         else:
             ax.plot(age,np.mean(simdata,axis=1),lw=2)
