@@ -67,12 +67,12 @@ def solve_keep(t,sol,par):
                 # b. optimal choice
                 c_low = np.fmin(m/2,1e-8)
                 c_high = m
-                #c[i_p,i_n,i_m] = golden_section_search.optimizer(obj_keep,c_low,c_high,args=(n,m,inv_w[i_p,i_n],grid_a[i_n,:],d_ubar,alpha,rho,phi),tol=par.tol)
-                c[i_p,i_n,i_m] = golden_section_search.optimizer(obj_keep,c_low,c_high,args=(n,m,inv_w[i_p,i_n],grid_a,d_ubar,alpha,rho,phi),tol=par.tol)
+                c[i_p,i_n,i_m] = golden_section_search.optimizer(obj_keep,c_low,c_high,args=(n,m,inv_w[i_p,i_n],grid_a[i_n,:],d_ubar,alpha,rho,phi),tol=par.tol)
+                #c[i_p,i_n,i_m] = golden_section_search.optimizer(obj_keep,c_low,c_high,args=(n,m,inv_w[i_p,i_n],grid_a,d_ubar,alpha,rho,phi),tol=par.tol)
 
                 # c. optimal value
-                #v = -obj_keep(c[i_p,i_n,i_m],n,m,inv_w[i_p,i_n],grid_a[i_n,:],d_ubar,alpha,rho,phi)
-                v = -obj_keep(c[i_p,i_n,i_m],n,m,inv_w[i_p,i_n],grid_a,d_ubar,alpha,rho,phi)
+                v = -obj_keep(c[i_p,i_n,i_m],n,m,inv_w[i_p,i_n],grid_a[i_n,:],d_ubar,alpha,rho,phi)
+                #v = -obj_keep(c[i_p,i_n,i_m],n,m,inv_w[i_p,i_n],grid_a,d_ubar,alpha,rho,phi)
 
                 inv_v[i_p,i_n,i_m] = -1/v
                 if par.do_marg_u:

@@ -74,7 +74,7 @@ class DurableConsumptionModelClass(ModelClass):
         
         # preferences
         par.beta = 0.965  # subjective discount factor
-        par.rho = 2.0   # risk aversion
+        par.rho = 2.0 # risk aversion
         par.alpha = 0.9 # relative share of consumption in utility
         par.d_ubar = 1e-2 # minimum level of housing
         par.phi = 0.8 # housing services scale
@@ -101,7 +101,7 @@ class DurableConsumptionModelClass(ModelClass):
         par.p_min = 1e-4 # minimum permanent income
         par.p_max = 3.0 # maximum permanent income
         par.Nn = 100  # number of points in housing level grid
-        par.n_max = 9.0 # maximum housing level
+        par.n_max = 8.0 # maximum housing level
         par.Nm = 100 # number of points in housing price grid
         par.m_max = 10.0  # maximum cash-on-hand level  
         par.Nx = 100 # number of points in cash-on-hand (after adj) grid
