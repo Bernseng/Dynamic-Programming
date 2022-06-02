@@ -483,5 +483,5 @@ class TwoAssetModelClass(ModelClass):
     def mpc_over_cash_on_hand(self):
         figs.mpc_over_cash_on_hand(self)
 
-    def mpc_over_life_cycle(self):
-        figs.mpc_over_cash_on_hand(self)
+    def mpc_over_lifecycle(self):
+        figs.mpc_over_lifecycle(self)
