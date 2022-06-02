@@ -5,43 +5,6 @@ import scipy.optimize as optimize
 from consav import linear_interp # for linear interpolation
 from TwoAssetModel import TwoAssetModelClass as model
 
-def maximum_likelihood(model, est_par, theta0, data,do_stderr):
-    
-    # Check the parameters
-    assert (len(est_par)==len(theta0)), 'Number of parameters and initial values do not match'
-    
-    #Estimation
-    obj_fun = lambda x: -log_likelihood(x,model,est_par,data)
-    res = optimize.minimize(obj_fun,theta0)
-
-    return res
-
-def log_likelihood(theta, model, est_par, data):
-    
-    #Update parameters
-    par = model.par
-    sol = model.sol
-
-    par = updatepar(par,est_par,theta)
-
-    # Solve the model
-    model.create_grids()
-    model.solve()
-
-    # Predict consumption
-    t = data.t 
-    c_predict = linear_interp.linear_interp_1d(sol.m[t,:],sol.c[t,:],data.m)
-    C_predict = c_predict*data.P   #Renormalize
-
-    # Calculate errors
-    error = data.logC -np.log(C_predict)
-
-    # Calculate log-likelihood
-    log_lik_vec = - 0.5*np.log(2*np.pi*par.sigma_eta**2)
-    log_lik_vec += (- (error**2)/(2*par.sigma_eta**2) )
-    
-    return np.mean(log_lik_vec) 
-
 def updatepar(par, parnames, parvals):
 
     for i,parval in enumerate(parvals):

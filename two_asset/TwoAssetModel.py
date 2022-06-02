@@ -116,7 +116,7 @@ class TwoAssetModelClass(ModelClass):
         par.mu_a0 = 0.2 # mean initial assets
         par.sigma_a0 = 0.1 # standard deviation of initial assets
         par.simN = 10_000 # number of simulated agents
-        par.sim_seed = 1998 # seed for random number generator
+        par.sim_seed = 1994 # seed for random number generator
         par.euler_cutoff = 0.02 # euler error cutoff
         par.moments_noise = 0.1 # moments noise
         par.moments_minage = 0 # min age when moments are available
