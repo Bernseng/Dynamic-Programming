@@ -27,16 +27,17 @@ def value_of_choice(t,c,d,p,x,inv_v_keep,inv_v_adj,par):
         psi_w = par.psi_w[ishock]
         xi = par.xi[ishock]
         xi_w = par.xi_w[ishock]
-
+        z = par.z[ishock]
+        z_w = par.z_w[ishock]
         
         # ii. next-period states
-        p_plus = trans.p_plus_func(p,psi,par)
-        n_plus = trans.n_plus_func(d,par)
-        m_plus = trans.m_plus_func(a,p_plus,xi,par)
+        p_plus = trans.p_plus_func(p,psi,par,t)
+        n_plus = trans.n_plus_func(d,par,z)
+        m_plus = trans.m_plus_func(a,p_plus,xi,par,t)
         x_plus = trans.x_plus_func(m_plus,n_plus,par)
         
         # iii. weight
-        weight = psi_w*xi_w
+        weight = psi_w*xi_w*z_w
 
         # iv. update
         inv_v_plus_keep_now = linear_interp.interp_3d(par.grid_p,par.grid_n,par.grid_m,
