@@ -20,9 +20,12 @@ def n_plus_func(d,par,z):
     return n_plus
 
 @njit(fastmath=True)
-def m_plus_func(a,p_plus,xi_plus,par):
-    y_plus = p_plus*xi_plus
-    m_plus = par.R*a+ y_plus
+def m_plus_func(a,p_plus,xi_plus,par,t):
+    if t<=par.Tr:
+        y_plus = p_plus*xi_plus
+    else:
+        y_plus = p_plus
+    m_plus = par.R*a+y_plus
     return m_plus
 
 @njit(fastmath=True)
