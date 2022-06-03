@@ -111,6 +111,7 @@ def mpc_over_cash_on_hand(model):
     plt.xlabel('Cash-on-hand, $m_t$',fontsize=15)
     plt.ylabel('$\mathcal{MPC}_t$',fontsize=15)
     plt.legend(fontsize=15)
+    plt.tight_layout()
     plt.savefig('output/mpc_over_wealth_twoasset.png')
     plt.show()
 
