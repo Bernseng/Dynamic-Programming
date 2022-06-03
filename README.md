@@ -10,7 +10,7 @@ To replicate the results of the paper, the interested reader would have to revie
 
 Each model-specific notebook is placed in a separate folder along with the modules needed for solving the model. The notebooks each contain the code for replicating the figures and computation times. 
 
-**Model specification: Table 1 and Table 6:**
+**Model specification: Table 1 and Table 5:**
 
 Can be found in the model initialization in [Two-Asset Model module](two_asset/TwoAssetModel.py). 
 
