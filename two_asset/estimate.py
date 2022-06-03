@@ -32,7 +32,7 @@ def method_simulated_moments(model,est_par,theta0,data):
 
     return res
 
-def sum_squared_diff_moments(theta0,model,est_par,data,scale=1):
+def sum_squared_diff_moments(theta0,model,est_par,data):
 
     par = model.par
     #Update parameters
@@ -43,8 +43,8 @@ def sum_squared_diff_moments(theta0,model,est_par,data,scale=1):
     model.solve()
 
     # Simulate the momemnts
-    moments = np.nan + np.zeros((data.moments.size,par.moments_numsim)) # both a
-    #moments = np.nan + np.zeros((data.moments.shape[0],data.moments.shape[1],par.moments_numsim)) # both a and y
+    moments = np.nan + np.zeros((data.moments.size,par.moments_numsim)) # only a
+    #moments = np.nan + np.zeros((data.moments.shape(),par.moments_numsim)) # both a and y
 
     for s in range(par.moments_numsim):
 

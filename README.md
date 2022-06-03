@@ -2,6 +2,7 @@
 This is the working repository for writing our term paper in the course [Dynamic Programming](https://kurser.ku.dk/course/a%C3%98kk08207u/) at the University of Copenhagen.
 
 The group consists of Frederik Degn Pedersen, Christian Brauer Johanssen and Signe Holst Madsen.
+
 ## Replicating the results
 To replicate the results of the paper, the interested reader would have to review the two following notebooks representing the models in A.1 and section 2 in our paper:
 - [One-Asset Model](one_asset/OneAssetModel.ipynb)
@@ -26,8 +27,9 @@ The average MPCs in Table 3 and MPCs from Table 4 sensitivity analysis are also 
 Each notebook will plot the figures associated with the given model.
 
 **Estimation:**
+To illustrate that we are indeed able to estimate the "true" parameters. Nothing fancy going on there.. 
+- [Two-Asset Estimation Notebook](two_asset/estimation.ipynb)
 
-Fuck me
 ## Dependencies
 
 We thank Jeppe Druedahl for his contributions to the consumption-saving literature and for making the code open source. Our main model draws (heavily?) from the models put forward in [this repository](https://github.com/NumEconCopenhagen/ConsumptionSavingNotebooks). 
