@@ -9,17 +9,21 @@ To replicate the results of the paper, the interested reader would have to revie
 
 Each model-specific notebook is placed in a separate folder along with the modules needed for solving the model. The notebooks each contain the code for replicating the figures and computation times. 
 
-**Figures:**
+**Model specification: Table 1 and Table 6:**
 
-Each notebook will plot the figures associated with the given model
+Can be found in the model initialization in [Two-Asset Model module](two_asset/TwoAssetModel.py). 
 
 **Computing time**
 
-By running the notebook the total and period-specific computation times are reported when loading the models for each solution method. 
+By running the notebook, the total and period-specific computation times are reported when loading the models for each solution method. These timings make up Table 2 in our paper. 
 
-**Model specification: Table 1 and Table 6:**
+**MPCs:**
 
-Can be found in the model initialization in [Two-Asset Model](two_asset/TwoAssetModel.py).
+The average MPCs in Table 3 and MPCs from Table 4 sensitivity analysis are also present in notebook. As default, the MPCs are cross-computed in the simulation part, but to create the non cross-computed MPCs a boolean for ``cross_compute=False`` can be set when initiating the model.
+
+**Figures:**
+
+Each notebook will plot the figures associated with the given model.
 
 **Estimation:**
 

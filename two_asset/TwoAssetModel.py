@@ -485,3 +485,6 @@ class TwoAssetModelClass(ModelClass):
 
     def mpc_over_life_cycle(self):
         figs.mpc_over_cash_on_hand(self)
+
+    def adj_share_over_lifecycle(self):
+        figs.adj_share_over_lifecycle(self)
