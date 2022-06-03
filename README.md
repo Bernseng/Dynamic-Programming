@@ -32,12 +32,13 @@ To illustrate that we are indeed able to estimate the "true" parameters. Nothing
 
 ## Dependencies
 
-We thank Jeppe Druedahl for his contributions to the consumption-saving literature and for making the code open source. Our main model draws (heavily?) from the models put forward in [this repository](https://github.com/NumEconCopenhagen/ConsumptionSavingNotebooks). 
+We thank Jeppe Druedahl for making the code open source. Our main model draws from the models put forward in [this repository](https://github.com/NumEconCopenhagen/ConsumptionSavingNotebooks). 
 
 Packages required for running the notebooks are:
 - [numpy](https://pypi.org/project/numpy/)
 - [pandas](https://pypi.org/project/pandas/)
 - [numba](https://pypi.org/project/numba/)
 - [quantecon](https://pypi.org/project/quantecon/)
+- [EconModel](https://pypi.org/project/EconModel/)
 - [ConSav](https://pypi.org/project/ConSav/)
 - [matplotlib](https://pypi.org/project/matplotlib/)
